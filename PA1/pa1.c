@@ -9,7 +9,7 @@
 // M: number of segments in S
 // c0,c1,c2: letters to be used in property check
 
-// Global thread variables
+// Global threading variables
 int thread_count;
 
 int i = 0;
@@ -20,7 +20,9 @@ char c0;
 char c1;
 char c2;
 
-String
+void threadFunc (void* rank){
+        printf("thread: %ld of %d\n", rank, M);
+}
 // A function that determines of a string is numeric
 bool isNumeric(const char *str)
 {
@@ -73,9 +75,25 @@ int main(int argc, char *argv[]) {
         }
 
         // Store integer results into variables
-        i = results[0];
-        N = results[1];
-        L = results[2];
-        M = results[3];
+        i = result[0];
+        N = result[1];
+        L = result[2];
+        M = result[3];
 
+        // MULTI THREADING
+        pthread_t* thread_handles;
+        thread_handles = malloc(M*sizeof(pthread_t));
+        for (long thread = 0; thread < M; thread++) {
+                pthread_create(&thread_handles[thread], NULL, threadFunc, (void*) thread);
+        }
+
+        printf("[MAIN] Just passing through\n" );
+
+        for (long thread = 0; i < M; i++) {
+                pthread_join(thread_handles[thread],NULL);
+        }
+
+        free(thread_handles);
+
+        return 0;
 }

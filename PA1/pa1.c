@@ -1,5 +1,8 @@
 #include <pthread.h>
 #include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
+
 #include <stdbool.h>
 // Command line arguments:
 //      /pal.x i N L M c0 c1 c2
@@ -20,9 +23,8 @@ char c0;
 char c1;
 char c2;
 
-void threadFunc (void* rank){
-        printf("thread: %ld of %d\n", rank, M);
-}
+void threadFunc (int* rank);
+
 // A function that determines of a string is numeric
 bool isNumeric(const char *str)
 {
@@ -40,7 +42,7 @@ int main(int argc, char *argv[]) {
         // Check for correct number of arguments
         if( argc ==  8) {
                 // Confirm inputs are of correct type
-                for (size_t i = 1; i < 8; i++) {
+                for (int i = 1; i < 8; i++) {
                         // Check if first four are digits
                         if (i <= 4 && !isNumeric(argv[i])) {
                                 printf("[ERROR] First four args must be numbers. \n");
@@ -65,7 +67,7 @@ int main(int argc, char *argv[]) {
         int correct_upper[4] = {3, 8, 1000, 1000};
         // Defaults
         int result[4] = {0,3,1,6};
-        for (size_t i = 1; i <= 4; i++) {
+        for (int i = 1; i <= 4; i++) {
                 int curr_arg = atoi (argv[i]);
                 if (!(curr_arg >= correct_lower[i-1] && curr_arg <= correct_upper[i-1])) {
                         printf("[ERROR]: Argument %d must be range %d to %d\n", i, correct_lower[i-1], correct_upper[i-1]);
@@ -79,7 +81,7 @@ int main(int argc, char *argv[]) {
         N = result[1];
         L = result[2];
         M = result[3];
-
+        printf("Creating %d threads\n", M);
         // MULTI THREADING
         pthread_t* thread_handles;
         thread_handles = malloc(M*sizeof(pthread_t));
@@ -96,4 +98,7 @@ int main(int argc, char *argv[]) {
         free(thread_handles);
 
         return 0;
+}
+void threadFunc (int* rank){
+        printf("[THREAD %d] thread: %d of %d\n", rank, rank, M);
 }

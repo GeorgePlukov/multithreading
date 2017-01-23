@@ -14,6 +14,8 @@
 
 // Global threading variables
 int thread_count;
+char *S;
+
 
 int i = 0;
 int N = 3;

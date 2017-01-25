@@ -1,8 +1,7 @@
 C = g++
-pa1: pa1.o
-	$(CC)  -o pa1.x pa1.o -lpthread
-pa1.o: pa1.c
-	$(CC)  -c pa1.c -lpthread
+pa1:
+	g++  -o pa1.x pa1.cpp -lpthread -std=c++11
+
 
 clean:
 	- rm *.o

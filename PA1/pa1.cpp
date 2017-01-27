@@ -86,36 +86,29 @@ int main(int argc, char *argv[]) {
         int correct_upper[4] = {3, 8, 1000, 1000};
         // Defaults
         int result[4] = {0,3,1,6};
-        for (int i = 1; i <= 4; i++) {
-                int curr_arg = atoi (argv[i]);
-                if (!(curr_arg >= correct_lower[i-1] && curr_arg <= correct_upper[i-1])) {
-                        printf("[ERROR]: Argument %d must be range %d to %d\n", i, correct_lower[i-1], correct_upper[i-1]);
-                        exit(0);
-                }
-                result[i] = curr_arg;
-        }
+
 
         // Store integer results into variables
-        i = result[0];
-        N = result[1];
-        L = result[2];
-        M = result[3];
+        i = atoi(argv[1]);
+        N = atoi(argv[2]);;
+        L = atoi(argv[3]);;
+        M = atoi(argv[4]);;
 
         // Set string size
-        printf("Creating %d threads\n", M);
+        printf("Creating %d threads\n", N);
         // MULTI THREADING
         pthread_t* thread_handles;
-        thread_handles =(pthread_t*) malloc(M*sizeof(pthread_t));
-        for (long thread = 0; thread < M; thread++) {
+        thread_handles =(pthread_t*) malloc(N*sizeof(pthread_t));
+        for (long thread = 0; thread < N; thread++) {
                 pthread_create(&thread_handles[thread], NULL, threadFunc, (void*) thread);
         }
 
         printf("[MAIN] Just passing through\n");
 
-        for (long thread = 0; i < M; i++) {
+        for (long thread = 0; i < N; i++) {
                 pthread_join(thread_handles[thread], NULL);
         }
-
+        printf("String: %s length: %lu\n", S.c_str(), S.length());
         free(thread_handles);
 
         return 0;
@@ -123,8 +116,9 @@ int main(int argc, char *argv[]) {
 
 void *threadFunc (void* rank){
         int i_rank = (int) ((size_t) rank);
-        printf("%i\n", i_rank);
-        for (size_t i = 0; i < 100; i++) {
+        printf("[THREAD %i] \n", i_rank);
+        for (;;) {
+          // Gen rand 100 - 500
           int r = rand() % 400 +100;
           usleep(r);
 
@@ -135,8 +129,10 @@ void *threadFunc (void* rank){
             S += (char) i_rank +97;
 
             // printf("[THREAD %d] thread: %d of %d. Wait:%i miliseconds\n", rank, rank, M, r);
-            printf("%d, %s\n", i_rank, S.c_str());
+            // printf("%d, %s\n", i_rank, S.c_str());
             pthread_mutex_unlock(&mutex_S);
+          }else {
+            break;
           }
 
 

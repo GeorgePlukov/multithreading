@@ -35,9 +35,21 @@ int i = 0;
 int N = 3;
 int L = 1;
 int M = 6;
+
+
 char c0;
 char c1;
 char c2;
+int c1_count = 0;
+int c2_count = 0;
+int c0_count = 0;
+pthread_mutex_t mutex_c0;
+pthread_mutex_t mutex_c1;
+pthread_mutex_t mutex_c2;
+
+int tot_count = 0;
+pthread_mutex_t mutex_tot;
+
 
 void *threadFunc (void* rank);
 
@@ -93,7 +105,10 @@ int main(int argc, char *argv[]) {
         N = atoi(argv[2]);;
         L = atoi(argv[3]);;
         M = atoi(argv[4]);;
-
+        printf("%s\n", argv[7]);
+        c0 = *argv[5];
+        c1 = *argv[6];
+        c2 = *argv[7];
         // Set string size
         printf("Creating %d threads\n", N);
         // MULTI THREADING
@@ -113,7 +128,35 @@ int main(int argc, char *argv[]) {
 
         return 0;
 }
+void updateTotals(int i_rank){
+        // printf("%i %c\n", i_rank, c0);
+        // printf("%i %c\n", i_rank, c1);
+        // printf("%i %c\n", i_rank, c2);
 
+        if (i_rank + 97 == c0) {
+
+          pthread_mutex_lock(&mutex_c0);
+          c0_count++;
+          pthread_mutex_unlock(&mutex_c0);
+
+        } else if (i_rank + 97 == c1) {
+
+          pthread_mutex_lock(&mutex_c1);
+          c1_count++;
+          pthread_mutex_unlock(&mutex_c1);
+
+        }else if (i_rank + 97 == c2) {
+          pthread_mutex_lock(&mutex_c2);
+          c2_count++;
+          pthread_mutex_unlock(&mutex_c2);
+        }
+
+        pthread_mutex_lock(&mutex_tot);
+        tot_count++;
+        pthread_mutex_unlock(&mutex_tot);
+
+        printf("tot:%i c0:%i c1:%i c2:%i\n", tot_count, c0_count, c1_count, c2_count);
+}
 void *threadFunc (void* rank){
         int i_rank = (int) ((size_t) rank);
         printf("[THREAD %i] \n", i_rank);
@@ -124,7 +167,9 @@ void *threadFunc (void* rank){
 
                 // Check the length of the string to see if a new char should be appended
                 if(S.length() < M*L) {
+                        // if (N >)
                         pthread_mutex_lock(&mutex_S);
+                        updateTotals(i_rank);
                         // Add 97 so we get the char associated with that thread 97=a, 98=b...
                         S += (char) i_rank +97;
 
@@ -134,8 +179,6 @@ void *threadFunc (void* rank){
                 }else {
                         break;
                 }
-
-
         }
         return NULL;
         // Wait for a random amount of time

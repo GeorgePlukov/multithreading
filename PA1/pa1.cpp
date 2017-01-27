@@ -117,23 +117,23 @@ int main(int argc, char *argv[]) {
 void *threadFunc (void* rank){
         int i_rank = (int) ((size_t) rank);
         printf("[THREAD %i] \n", i_rank);
-        for (;;) {
-          // Gen rand 100 - 500
-          int r = rand() % 400 +100;
-          usleep(r);
+        for (;; ) {
+                // Gen rand 100 - 500
+                int r = rand() % 400 +100;
+                usleep(r * 1000);
 
-          // Check the length of the string to see if a new char should be appended
-          if(S.length() < M*L){
-            pthread_mutex_lock(&mutex_S);
-            // Add 97 so we get the char associated with that thread 97=a, 98=b...
-            S += (char) i_rank +97;
+                // Check the length of the string to see if a new char should be appended
+                if(S.length() < M*L) {
+                        pthread_mutex_lock(&mutex_S);
+                        // Add 97 so we get the char associated with that thread 97=a, 98=b...
+                        S += (char) i_rank +97;
 
-            // printf("[THREAD %d] thread: %d of %d. Wait:%i miliseconds\n", rank, rank, M, r);
-            // printf("%d, %s\n", i_rank, S.c_str());
-            pthread_mutex_unlock(&mutex_S);
-          }else {
-            break;
-          }
+                        // printf("[THREAD %d] thread: %d of %d. Wait:%i miliseconds\n", rank, rank, M, r);
+                        // printf("%d, %s\n", i_rank, S.c_str());
+                        pthread_mutex_unlock(&mutex_S);
+                }else {
+                        break;
+                }
 
 
         }

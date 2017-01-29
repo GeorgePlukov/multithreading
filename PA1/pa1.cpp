@@ -31,27 +31,37 @@ string S = "";
 pthread_mutex_t mutex_S;
 
 
-int i = 0;
+int i_property = 0;
 int N = 3;
 int L = 1;
-int M = 6;
+int M = 6; //num seg
 
+pthread_mutex_t mutex_curr_seg;
+int curr_seg = 0;
 
+// For counting number of each input char in a segment
 char c0;
 char c1;
 char c2;
-int c1_count = 0;
-int c2_count = 0;
-int c0_count = 0;
-pthread_mutex_t mutex_c0;
-pthread_mutex_t mutex_c1;
-pthread_mutex_t mutex_c2;
-
-int tot_count = 0;
-pthread_mutex_t mutex_tot;
-
-
+// // int c1_count = 0;
+// // int c2_count = 0;
+// // int c0_count = 0;
+// pthread_mutex_t mutex_c0;
+// // pthread_mutex_t mutex_c1;
+// // pthread_mutex_t mutex_c2;
+// // // total number f characters in a segment
+// // int tot_count = 0;
+// // pthread_mutex_t mutex_tot;
+//
+// //Total number of correct segments
+int correct_segments = 0;
+pthread_mutex_t mutex_correct_segment;
+// //Total number of correct segments
+int incorrect_segments = 0;
+pthread_mutex_t mutex_incorrect_segment;
+// Headers
 void *threadFunc (void* rank);
+void *threadCheck (void* rank);
 
 // A function that determines of a string is numeric
 bool isNumeric(const char *str)
@@ -101,7 +111,7 @@ int main(int argc, char *argv[]) {
 
 
         // Store integer results into variables
-        i = atoi(argv[1]);
+        i_property = atoi(argv[1]);
         N = atoi(argv[2]);;
         L = atoi(argv[3]);;
         M = atoi(argv[4]);;
@@ -120,43 +130,172 @@ int main(int argc, char *argv[]) {
 
         printf("[MAIN] Just passing through\n");
 
-        for (long thread = 0; i < N; i++) {
+        for (long thread = 0; thread < N; thread++) {
                 pthread_join(thread_handles[thread], NULL);
         }
         printf("String: %s length: %lu\n", S.c_str(), S.length());
         free(thread_handles);
 
-        return 0;
-}
-void updateTotals(int i_rank){
-        // printf("%i %c\n", i_rank, c0);
-        // printf("%i %c\n", i_rank, c1);
-        // printf("%i %c\n", i_rank, c2);
 
-        if (i_rank + 97 == c0) {
 
-          pthread_mutex_lock(&mutex_c0);
-          c0_count++;
-          pthread_mutex_unlock(&mutex_c0);
-
-        } else if (i_rank + 97 == c1) {
-
-          pthread_mutex_lock(&mutex_c1);
-          c1_count++;
-          pthread_mutex_unlock(&mutex_c1);
-
-        }else if (i_rank + 97 == c2) {
-          pthread_mutex_lock(&mutex_c2);
-          c2_count++;
-          pthread_mutex_unlock(&mutex_c2);
+        // Create the threads for all of the checks
+        pthread_t* thread_handles_check;
+        thread_handles_check =(pthread_t*) malloc(N*sizeof(pthread_t));
+        for (long thread = 0; thread < N; thread++) {
+                pthread_create(&thread_handles_check[thread], NULL, threadCheck, (void*) thread);
         }
 
-        pthread_mutex_lock(&mutex_tot);
-        tot_count++;
-        pthread_mutex_unlock(&mutex_tot);
+        printf("[MAIN] Just passing through part 2\n");
 
-        printf("tot:%i c0:%i c1:%i c2:%i\n", tot_count, c0_count, c1_count, c2_count);
+        for (long thread = 0; thread < N; thread++) {
+                pthread_join(thread_handles_check[thread], NULL);
+        }
+
+        // printf("Number of correct segments: %d\n", correct_segments);
+        free(thread_handles_check);
+        for (long i = 0; i < S.length(); i += L) {
+                for (size_t k = 0; k < L; k++) {
+                        printf("%c", S[i+k]);
+                }
+                printf("\n");
+        }
+        printf("corr: %i  incorrect: %i\n", correct_segments, incorrect_segments);
+
+        return 0;
 }
+
+// M = num of segments
+int segment_number = 0;
+pthread_mutex_t mutex_segment_number;
+void *threadCheck (void* rank){
+        int c0_count = 0;
+        int c1_count = 0;
+        int c2_count = 0;
+        // beginnning index of the sefment we are checking
+        int begin_ind = 0;
+
+        // Lock the segment number to make sure our check is done atomically
+        pthread_mutex_lock(&mutex_segment_number);
+        while (segment_number < M) {
+                begin_ind = segment_number * L;
+                //consume a segment
+                segment_number++;
+                pthread_mutex_unlock(&mutex_segment_number);
+
+                for (int i = 0; i < L; i++) {
+
+                        if (S[begin_ind + i ] == c0) {
+                                c0_count++;
+                        }else if (S[begin_ind + i] == c1) {
+                                c1_count++;
+                        }else if (S[begin_ind + i ] == c2) {
+                                c2_count++;
+                        }
+                }
+                if (i_property == 0) {
+                        if (c0_count + c1_count == c2_count) {
+                                // correct segment
+                                pthread_mutex_lock(&mutex_correct_segment);
+                                correct_segments++;
+                                pthread_mutex_unlock(&mutex_correct_segment);
+                                // printf("%s\n", );
+                        }else{
+                                pthread_mutex_lock(&mutex_incorrect_segment);
+                                incorrect_segments++;
+                                pthread_mutex_unlock(&mutex_incorrect_segment);
+                        }
+
+                } else if (i_property == 1){
+                  if (c0_count + 2 * c1_count == c2_count) {
+                          // correct segment
+                          pthread_mutex_lock(&mutex_correct_segment);
+                          correct_segments++;
+                          pthread_mutex_unlock(&mutex_correct_segment);
+                          // printf("%s\n", );
+                  }else{
+                          pthread_mutex_lock(&mutex_incorrect_segment);
+                          incorrect_segments++;
+                          pthread_mutex_unlock(&mutex_incorrect_segment);
+                  }
+                }else if (i_property == 2){
+                  if (c0_count * c1_count == c2_count) {
+                          // correct segment
+                          pthread_mutex_lock(&mutex_correct_segment);
+                          correct_segments++;
+                          pthread_mutex_unlock(&mutex_correct_segment);
+                          // printf("%s\n", );
+                  }else{
+                          pthread_mutex_lock(&mutex_incorrect_segment);
+                          incorrect_segments++;
+                          pthread_mutex_unlock(&mutex_incorrect_segment);
+                  }
+                }else if (i_property == 3){
+                  if (c0_count - c1_count == c2_count) {
+                          // correct segment
+                          pthread_mutex_lock(&mutex_correct_segment);
+                          correct_segments++;
+                          pthread_mutex_unlock(&mutex_correct_segment);
+                          // printf("%s\n", );
+                  }else{
+                          pthread_mutex_lock(&mutex_incorrect_segment);
+                          incorrect_segments++;
+                          pthread_mutex_unlock(&mutex_incorrect_segment);
+                  }
+                }
+                printf("Segment count: %i %i %i\n", c0_count, c1_count,c2_count);
+                c0_count = 0;
+                c1_count = 0;
+                c2_count = 0;
+        }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+// void updateTotals(int i_rank){
+//         // printf("%i %c\n", i_rank, c0);
+//         // printf("%i %c\n", i_rank, c1);
+//         // printf("%i %c\n", i_rank, c2);
+//
+//         if (i_rank + 97 == c0) {
+//
+//                 pthread_mutex_lock(&mutex_c0);
+//                 c0_count++;
+//                 pthread_mutex_unlock(&mutex_c0);
+//
+//         } else if (i_rank + 97 == c1) {
+//
+//                 pthread_mutex_lock(&mutex_c1);
+//                 c1_count++;
+//                 pthread_mutex_unlock(&mutex_c1);
+//
+//         }else if (i_rank + 97 == c2) {
+//                 pthread_mutex_lock(&mutex_c2);
+//                 c2_count++;
+//                 pthread_mutex_unlock(&mutex_c2);
+//         }
+//
+//         pthread_mutex_lock(&mutex_tot);
+//         tot_count++;
+//         pthread_mutex_unlock(&mutex_tot);
+//
+//         printf("tot:%i c0:%i c1:%i c2:%i\n", tot_count, c0_count, c1_count, c2_count);
+// }
 void *threadFunc (void* rank){
         int i_rank = (int) ((size_t) rank);
         printf("[THREAD %i] \n", i_rank);
@@ -169,7 +308,7 @@ void *threadFunc (void* rank){
                 if(S.length() < M*L) {
                         // if (N >)
                         pthread_mutex_lock(&mutex_S);
-                        updateTotals(i_rank);
+                        // updateTotals(i_rank);
                         // Add 97 so we get the char associated with that thread 97=a, 98=b...
                         S += (char) i_rank +97;
 
@@ -184,3 +323,66 @@ void *threadFunc (void* rank){
         // Wait for a random amount of time
         // printf("[THREAD %d] thread: %d of %d. my num is: %i\n", rank, rank, M, r);
 }
+// void *threadCheck (void* rank){
+//   int i_rank = (int) ((size_t) rank);
+//
+//         // if there is a segment left
+//         while (curr_seg < M) {
+//
+//                 //check the segment to verify properties
+//                 int i = curr_seg * L;
+//                 // int j = (curr_seg * L) + L - 1;
+//                 // iterate through segment and count the items
+//                 for (int l = 0; l < M; l++) {
+//                         // Compare the item in the string to the item
+//                         // printf("%c compared to %c = %s\n", S[i+l], c0, (S[i+l] == c0) ? "true" : "false");
+//                         if (S[i+l] == c0) {
+//                                 c0_count++;
+//                         } else if (S[i+l] == c1) {
+//                                 c1_count++;
+//                         }else if (S[i+l] == c2) {
+//                                 c2_count++;
+//                         }
+//                 }
+//
+//                 // Check if the counts add up
+//                 // if (i == 0) {
+//                         if (c0_count + c1_count == c2_count) {
+//                                 printf("[THREAD %i] f0: segment correct\n", i_rank);
+//                                 printf("c0: %i c1: %i c2: %i\n", c0_count, c1_count, c2_count);
+//                                 pthread_mutex_lock(&mutex_correct_counter);
+//                                 correct_segments++;
+//                                 pthread_mutex_unlock(&mutex_correct_counter);
+//                         } else{
+//                           printf("[THREAD %i] f0: segment NOT satisfied\n", i_rank);
+//
+//                         }
+//                 // }
+//                 // else if ( i == 1) {
+//                 //         if (c0_count + 2*c1_count == c2_count) {
+//                 //                 printf("f1: segment correct\n");
+//                 //                 pthread_mutex_lock(&mutex_correct_counter);
+//                 //                 correct_segments++;
+//                 //                 pthread_mutex_unlock(&mutex_correct_counter);
+//                 //         }
+//                 // } else if (i == 2) {
+//                 //         if (c0_count * c1_count == c2_count) {
+//                 //                 printf("f2: segment correct\n");
+//                 //                 pthread_mutex_lock(&mutex_correct_counter);
+//                 //                 correct_segments++;
+//                 //                 pthread_mutex_unlock(&mutex_correct_counter);
+//                 //         }
+//                 // } else if (i == 3) {
+//                 //         if (c0_count - c1_count == c2_count) {
+//                 //                 printf("f3: segment correct\n");
+//                 //                 pthread_mutex_lock(&mutex_correct_counter);
+//                 //                 correct_segments++;
+//                 //                 pthread_mutex_unlock(&mutex_correct_counter);
+//                 //         }
+//                 // }
+//                 pthread_mutex_lock(&mutex_curr_seg);
+//                 curr_seg++;
+//                 pthread_mutex_unlock(&mutex_curr_seg);
+//         }
+//
+// }

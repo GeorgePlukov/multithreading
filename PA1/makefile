@@ -6,3 +6,4 @@ pa1:
 clean:
 	- rm *.o
 	- rm example
+	- rm out.txt

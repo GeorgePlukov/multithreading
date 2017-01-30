@@ -115,12 +115,12 @@ int main(int argc, char *argv[]) {
         N = atoi(argv[2]);;
         L = atoi(argv[3]);;
         M = atoi(argv[4]);;
-        printf("%s\n", argv[7]);
+
         c0 = *argv[5];
         c1 = *argv[6];
         c2 = *argv[7];
         // Set string size
-        printf("Creating %d threads\n", N);
+        // printf("Creating %d threads\n", N);
         // MULTI THREADING
         pthread_t* thread_handles;
         thread_handles =(pthread_t*) malloc(N*sizeof(pthread_t));
@@ -128,12 +128,12 @@ int main(int argc, char *argv[]) {
                 pthread_create(&thread_handles[thread], NULL, threadFunc, (void*) thread);
         }
 
-        printf("[MAIN] Just passing through\n");
+        // printf("[MAIN] Just passing through\n");
 
         for (long thread = 0; thread < N; thread++) {
                 pthread_join(thread_handles[thread], NULL);
         }
-        printf("String: %s length: %lu\n", S.c_str(), S.length());
+        // printf("String: %s length: %lu\n", S.c_str(), S.length());
         free(thread_handles);
 
 
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
                 pthread_create(&thread_handles_check[thread], NULL, threadCheck, (void*) thread);
         }
 
-        printf("[MAIN] Just passing through part 2\n");
+        // printf("[MAIN] Just passing through part 2\n");
 
         for (long thread = 0; thread < N; thread++) {
                 pthread_join(thread_handles_check[thread], NULL);
@@ -153,17 +153,29 @@ int main(int argc, char *argv[]) {
 
         // printf("Number of correct segments: %d\n", correct_segments);
         free(thread_handles_check);
-        for (long i = 0; i < S.length(); i += L) {
-                for (size_t k = 0; k < L; k++) {
-                        printf("%c", S[i+k]);
-                }
-                printf("\n");
-        }
 
-        // TODO: PRINT THESE TO FILE
+        // for (long i = 0; i < S.length(); i += L) {
+        //         for (size_t k = 0; k < L; k++) {
+        //                 printf("%c", S[i+k]);
+        //         }
+        //         printf("\n");
+        // }
+
         printf("%s\n", S.c_str());
         printf("%i\n", correct_segments);
 
+        FILE *f = fopen("out.txt", "w");
+        if (f == NULL)
+        {
+            printf("Error opening file!\n");
+            exit(1);
+        }
+
+        // Print to the file
+        fprintf(f, "%s\n", S.c_str());
+        fprintf(f, "%i", correct_segments);
+
+        fclose(f);
         return 0;
 }
 
@@ -195,6 +207,9 @@ void *threadCheck (void* rank){
                                 c2_count++;
                         }
                 }
+
+                // Check to see if the segment has been satisfied
+
                 if (i_property == 0) {
                         if (c0_count + c1_count == c2_count) {
                                 // correct segment
@@ -245,7 +260,7 @@ void *threadCheck (void* rank){
                           pthread_mutex_unlock(&mutex_incorrect_segment);
                   }
                 }
-                printf("Segment count: %i %i %i\n", c0_count, c1_count,c2_count);
+                // printf("Segment count: %i %i %i\n", c0_count, c1_count,c2_count);
                 c0_count = 0;
                 c1_count = 0;
                 c2_count = 0;
@@ -253,8 +268,9 @@ void *threadCheck (void* rank){
 }
 void *threadFunc (void* rank){
         int i_rank = (int) ((size_t) rank);
-        printf("[THREAD %i] \n", i_rank);
+        // printf("[THREAD %i] \n", i_rank);
         for (;; ) {
+                // How to make it work by verifying
                 // Gen rand 100 - 500
                 int r = rand() % 400 +100;
                 usleep(r * 1000);

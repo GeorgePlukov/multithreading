@@ -159,7 +159,10 @@ int main(int argc, char *argv[]) {
                 }
                 printf("\n");
         }
-        printf("corr: %i  incorrect: %i\n", correct_segments, incorrect_segments);
+
+        // TODO: PRINT THESE TO FILE
+        printf("%s\n", S.c_str());
+        printf("%i\n", correct_segments);
 
         return 0;
 }
@@ -248,54 +251,6 @@ void *threadCheck (void* rank){
                 c2_count = 0;
         }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-// void updateTotals(int i_rank){
-//         // printf("%i %c\n", i_rank, c0);
-//         // printf("%i %c\n", i_rank, c1);
-//         // printf("%i %c\n", i_rank, c2);
-//
-//         if (i_rank + 97 == c0) {
-//
-//                 pthread_mutex_lock(&mutex_c0);
-//                 c0_count++;
-//                 pthread_mutex_unlock(&mutex_c0);
-//
-//         } else if (i_rank + 97 == c1) {
-//
-//                 pthread_mutex_lock(&mutex_c1);
-//                 c1_count++;
-//                 pthread_mutex_unlock(&mutex_c1);
-//
-//         }else if (i_rank + 97 == c2) {
-//                 pthread_mutex_lock(&mutex_c2);
-//                 c2_count++;
-//                 pthread_mutex_unlock(&mutex_c2);
-//         }
-//
-//         pthread_mutex_lock(&mutex_tot);
-//         tot_count++;
-//         pthread_mutex_unlock(&mutex_tot);
-//
-//         printf("tot:%i c0:%i c1:%i c2:%i\n", tot_count, c0_count, c1_count, c2_count);
-// }
 void *threadFunc (void* rank){
         int i_rank = (int) ((size_t) rank);
         printf("[THREAD %i] \n", i_rank);
@@ -323,66 +278,3 @@ void *threadFunc (void* rank){
         // Wait for a random amount of time
         // printf("[THREAD %d] thread: %d of %d. my num is: %i\n", rank, rank, M, r);
 }
-// void *threadCheck (void* rank){
-//   int i_rank = (int) ((size_t) rank);
-//
-//         // if there is a segment left
-//         while (curr_seg < M) {
-//
-//                 //check the segment to verify properties
-//                 int i = curr_seg * L;
-//                 // int j = (curr_seg * L) + L - 1;
-//                 // iterate through segment and count the items
-//                 for (int l = 0; l < M; l++) {
-//                         // Compare the item in the string to the item
-//                         // printf("%c compared to %c = %s\n", S[i+l], c0, (S[i+l] == c0) ? "true" : "false");
-//                         if (S[i+l] == c0) {
-//                                 c0_count++;
-//                         } else if (S[i+l] == c1) {
-//                                 c1_count++;
-//                         }else if (S[i+l] == c2) {
-//                                 c2_count++;
-//                         }
-//                 }
-//
-//                 // Check if the counts add up
-//                 // if (i == 0) {
-//                         if (c0_count + c1_count == c2_count) {
-//                                 printf("[THREAD %i] f0: segment correct\n", i_rank);
-//                                 printf("c0: %i c1: %i c2: %i\n", c0_count, c1_count, c2_count);
-//                                 pthread_mutex_lock(&mutex_correct_counter);
-//                                 correct_segments++;
-//                                 pthread_mutex_unlock(&mutex_correct_counter);
-//                         } else{
-//                           printf("[THREAD %i] f0: segment NOT satisfied\n", i_rank);
-//
-//                         }
-//                 // }
-//                 // else if ( i == 1) {
-//                 //         if (c0_count + 2*c1_count == c2_count) {
-//                 //                 printf("f1: segment correct\n");
-//                 //                 pthread_mutex_lock(&mutex_correct_counter);
-//                 //                 correct_segments++;
-//                 //                 pthread_mutex_unlock(&mutex_correct_counter);
-//                 //         }
-//                 // } else if (i == 2) {
-//                 //         if (c0_count * c1_count == c2_count) {
-//                 //                 printf("f2: segment correct\n");
-//                 //                 pthread_mutex_lock(&mutex_correct_counter);
-//                 //                 correct_segments++;
-//                 //                 pthread_mutex_unlock(&mutex_correct_counter);
-//                 //         }
-//                 // } else if (i == 3) {
-//                 //         if (c0_count - c1_count == c2_count) {
-//                 //                 printf("f3: segment correct\n");
-//                 //                 pthread_mutex_lock(&mutex_correct_counter);
-//                 //                 correct_segments++;
-//                 //                 pthread_mutex_unlock(&mutex_correct_counter);
-//                 //         }
-//                 // }
-//                 pthread_mutex_lock(&mutex_curr_seg);
-//                 curr_seg++;
-//                 pthread_mutex_unlock(&mutex_curr_seg);
-//         }
-//
-// }

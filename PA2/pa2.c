@@ -1,19 +1,13 @@
 // This was a collaboration between:
 // George Plukov (plukovga, 1316246)
-// Ryan Lambert (lamberrj, 1218407)
 
 #include <stdio.h>
-// #include <ctype.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <iostream>
 #include <time.h>
-#include <string>
-#include <cstring>
-
 #include <stdbool.h>
+#include <omp.h>
 
-using namespace std;
+
 // Command line arguments:
 //      /pal.x i N L M c0 c1 c2
 // i: index of the property Fi which each segment of S needs to satisfy
@@ -21,10 +15,6 @@ using namespace std;
 // L: length of each S
 // M: number of segments in S
 // c0,c1,c2: letters to be used in property check
-
-// Global threading variables
-int thread_count;
-string S = "";
 
 int i_property = 0;
 int N = 3;
@@ -36,11 +26,11 @@ char c0;
 char c1;
 char c2;
 
-// Headers
-void *threadFunc (void* rank);
-void *threadCheck (void* rank);
-
-// A function that determines of a string is numeric
+// // Headers
+// void *threadFunc (void* rank);
+// void *threadCheck (void* rank);
+//
+// // A function that determines of a string is numeric
 bool isNumeric(const char *str)
 {
         while(*str != '\0')
@@ -67,10 +57,10 @@ int main(int argc, char *argv[]) {
                                 exit(0);
                         }
                         // Check if next three are alphabet characters
-                        else if (i > 4 && !isalpha(argv[i][0])) {
-                                printf("[ERROR] Arguments 5,6,7 must be letters. \n" );
-                                exit(0);
-                        }
+                        // else if (i > 4 && !isalpha(argv[i][0])) {
+                        //         printf("[ERROR] Arguments 5,6,7 must be letters. \n" );
+                        //         exit(0);
+                        // }
                 }
         }
         else if(argc > 8) {
@@ -97,22 +87,5 @@ int main(int argc, char *argv[]) {
         c1 = *argv[6];
         c2 = *argv[7];
 
-
-        printf("inputs: i:%i n:%i L:%i M:%i c0:%c c1:%c c2:%c\n", i_property,N,L,M,c0,c1,c2);
-        // printf("%s\n", S.c_str());
-        // printf("%i\n", correct_segments);
-
-        FILE *f = fopen("out.txt", "w");
-        if (f == NULL)
-        {
-            printf("Error opening file!\n");
-            exit(1);
-        }
-
-        // Print to the file
-        fprintf(f, "%s\n", S.c_str());
-        // fprintf(f, "%i", correct_segments);
-
-        fclose(f);
         return 0;
 }

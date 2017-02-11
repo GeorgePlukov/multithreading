@@ -1,7 +1,7 @@
 // This was a collaboration between:
 // George Plukov (plukovga, 1316246)
-// Ryan Lambert (lamberrj, 1218407)
 
+// ./pa2.x 0 5 3 3 a b c
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -26,11 +26,7 @@ char c0;
 char c1;
 char c2;
 
-// // Headers
-// void *threadFunc (void* rank);
-// void *threadCheck (void* rank);
-//
-// // A function that determines of a string is numeric
+// A function that determines of a string is numeric
 bool isNumeric(const char *str)
 {
         while(*str != '\0')
@@ -76,10 +72,10 @@ int main(int argc, char *argv[]) {
         }
 
         // Input varification
-        int correct_lower[4] = {0, 3, 0, 0};
-        int correct_upper[4] = {3, 8, 1000, 1000};
-        // Defaults
-        int result[4] = {0,3,1,6};
+        // int correct_lower[4] = {0, 3, 0, 0};
+        // int correct_upper[4] = {3, 8, 1000, 1000};
+        // // Defaults
+        // int result[4] = {0,3,1,6};
 
 
         // Store integer results into variables
@@ -98,37 +94,60 @@ int main(int argc, char *argv[]) {
         int balance = 0;
 
         // Start N threads
-        # pragma omp parallel num_threads(N) default(none) shared(S,M,L,c0,c1,c2, curr_char) private (i_property)
+        # pragma omp parallel num_threads(N) default(none) shared(S,M,L,c0,c1,c2, curr_char,balance) private (i_property)
+        {
 
+                int rank = omp_get_thread_num();
+                char rank_char = (char) omp_get_thread_num() + 97;
 
-        for (;; ) {
-                // How to make it work by verifying
-                // Gen rand 100 - 500
-                int r = rand() % 400 +100;
-                usleep(r * 1000);
-                // printf("TEST\n");
-                // Check the length of the string to see if a n   ew char should be appended
-                if(curr_char < M*L) {
+                for (;; ) {
 
-                        // pthread_mutex_lock(&mutex_S);
-                        // updateTotals(i_rank);
-                        // Add 97 so we get the char associated with that thread 97=a, 98=b...
-                        #pragma omp critical (S)
-                        {
-                                S[curr_char] = (char) omp_get_thread_num() +97;
-                                curr_char++;
-                                printf("%c\n", (char) omp_get_thread_num() +97);
+                        // How to make it work by verifying
+                        // Gen rand 100 - 500
+                        int r = rand() % 400 +100;
+                        usleep(r * 1000);
+                        // if (i_property == 0) {
+                        //         if (rank_char == c0 ) {
+                        //                 if (balance > 0) {
+                        //                         while(balance > 0) {}
+                        //                 }else if (balance < 0) {
+                        //
+                        //                 }
+                        //         } else
+                        // }
+                        // Check the length of the string to see if a new char should be appended
+                        if(curr_char < M*L) {
+
+                                // pthread_mutex_lock(&mutex_S);
+                                // updateTotals(i_rank);
+                                // Add 97 so we get the char associated with that thread 97=a, 98=b...
+                                #pragma omp critical (S)
+                                {
+                                        S[curr_char] = rank_char;
+                                        curr_char++;
+                                        // printf("%c\n", rank_char);
+                                }
+                                // if (i_property == 0) {
+                                //         if (rank_char == c0 || rank_char == c1) {
+                                //         #pragma omp atomic
+                                //                 balance +=1;
+                                //         }else if (rank_char == c2) {
+                                //         #pragma omp atomic
+                                //                 balance -=1;
+                                //         }
+                                // }
+                                printf("%i\n", balance);
+                                usleep(500);
+                                // printf("[THREAD %d] thread: %d of %d. Wait:%i miliseconds\n", rank, rank, M, r);
+
+                                // pthread_mutex_unlock(&mutex_S);
+                        }else {
+                                break;
                         }
-                        // printf("[THREAD %d] thread: %d of %d. Wait:%i miliseconds\n", rank, rank, M, r);
-
-                        // pthread_mutex_unlock(&mutex_S);
-                }else {
-                        break;
                 }
         }
-
         for (size_t i = 0; i < L*M; i++) {
-                printf("%c\n", S[i]);
+                printf("%c", S[i]);
         }
         return 0;
 }

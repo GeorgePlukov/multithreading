@@ -1,13 +1,13 @@
 // This was a collaboration between:
 // George Plukov (plukovga, 1316246)
+// Ryan Lambert (lamberrj, 1218407)
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
-#include <omp.h>
-
-
+#include <unistd.h>
+void threadFunc (void);
 // Command line arguments:
 //      /pal.x i N L M c0 c1 c2
 // i: index of the property Fi which each segment of S needs to satisfy
@@ -41,7 +41,12 @@ bool isNumeric(const char *str)
         }
         return true;
 }
-
+void printArray (char* a){
+        for (size_t i = 0; i < sizeof(a) / sizeof(a[0])
+             ; i++) {
+                printf (a[i]);
+        }
+}
 // Programs main thread
 int main(int argc, char *argv[]) {
 
@@ -57,10 +62,10 @@ int main(int argc, char *argv[]) {
                                 exit(0);
                         }
                         // Check if next three are alphabet characters
-                        // else if (i > 4 && !isalpha(argv[i][0])) {
-                        //         printf("[ERROR] Arguments 5,6,7 must be letters. \n" );
-                        //         exit(0);
-                        // }
+                        else if (i > 4 && !isalpha(argv[i][0])) {
+                                printf("[ERROR] Arguments 5,6,7 must be letters. \n" );
+                                exit(0);
+                        }
                 }
         }
         else if(argc > 8) {
@@ -79,13 +84,51 @@ int main(int argc, char *argv[]) {
 
         // Store integer results into variables
         i_property = atoi(argv[1]);
-        N = atoi(argv[2]);;
-        L = atoi(argv[3]);;
-        M = atoi(argv[4]);;
+        N = atoi(argv[2]); // num of threads
+        L = atoi(argv[3]);
+        M = atoi(argv[4]);
 
         c0 = *argv[5];
         c1 = *argv[6];
         c2 = *argv[7];
 
+        char S [L*M+1];
+        S[L*M + 1] = '\0';
+        int curr_char = 0;
+        int balance = 0;
+
+        // Start N threads
+        # pragma omp parallel num_threads(N) default(none) shared(S,M,L,c0,c1,c2, curr_char) private (i_property)
+
+
+        for (;; ) {
+                // How to make it work by verifying
+                // Gen rand 100 - 500
+                int r = rand() % 400 +100;
+                usleep(r * 1000);
+                // printf("TEST\n");
+                // Check the length of the string to see if a n   ew char should be appended
+                if(curr_char < M*L) {
+
+                        // pthread_mutex_lock(&mutex_S);
+                        // updateTotals(i_rank);
+                        // Add 97 so we get the char associated with that thread 97=a, 98=b...
+                        #pragma omp critical (S)
+                        {
+                                S[curr_char] = (char) omp_get_thread_num() +97;
+                                curr_char++;
+                                printf("%c\n", (char) omp_get_thread_num() +97);
+                        }
+                        // printf("[THREAD %d] thread: %d of %d. Wait:%i miliseconds\n", rank, rank, M, r);
+
+                        // pthread_mutex_unlock(&mutex_S);
+                }else {
+                        break;
+                }
+        }
+
+        for (size_t i = 0; i < L*M; i++) {
+                printf("%c\n", S[i]);
+        }
         return 0;
 }

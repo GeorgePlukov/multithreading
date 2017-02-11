@@ -1,7 +1,5 @@
-// generate S
-// check S to be good
-// count # of segments in the string and the entire string
-// LAST STEP make sure the string doesnt get genereated improperly
+// George Plukov (plukovga, 1316246)
+// Ryan Lambert (1218407)
 
 
 #include <pthread.h>
@@ -292,5 +290,5 @@ void *threadFunc (void* rank){
         }
         return NULL;
         // Wait for a random amount of time
-        // printf("[THREAD %d] thread: %d of %d. my num is: %i\n", rank, rank, M, r);
+        // printf("[THREAD %d] thread: %d of %d/.\n", rank, rank, M);
 }

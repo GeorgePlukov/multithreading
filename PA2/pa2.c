@@ -152,23 +152,31 @@ int main(int argc, char *argv[]) {
         int segment_counter = 0;
         int begin_ind = 0;
         bool loop = true;
+
+
         int c0_count= 0;
         int c1_count= 0;
-        int c2_count= 0;
+        int c2_count1= 0;
+
+
         int correct_segments = 0;
+        int test = 0;
         int incorrect_segments = 0;
         // // Verify strings
-        # pragma omp parallel num_threads(N) default(none) shared(i_property,S,M,L,c0,c1,c2,segment_counter, correct_segments, incorrect_segments) private (loop, begin_ind, c0_count,c1_count,c2_count)
+        # pragma omp parallel num_threads(N) default(none) shared(i_property,S,M,L,c0,c1,c2,segment_counter, correct_segments, incorrect_segments) private (loop, begin_ind, c0_count,c1_count, c2_count1, test)
         {
                 int rank = omp_get_thread_num();
                 // printf("asdasdasd\n");
                 loop = true;
                 c0_count= 0;
                 c1_count= 0;
-                c2_count= 0;
+                c2_count1= 0;
                 begin_ind = 0;
                 // run loop while there are segments to consume
                 while(loop) {
+                        c0_count= 0;
+                        c1_count= 0;
+                        c2_count1= 0;
                         // printf("[THREAD %i] segment_ counter: %i\n",rank, segment_counter);
                         #pragma omp critical(segment)
                         {
@@ -186,21 +194,30 @@ int main(int argc, char *argv[]) {
                                 // Count the items in a segment
                                 for (int i = 0; i < L; i++) {
                                         if (S[begin_ind + i ] == c0) {
+                                                #pragma omp atomic
                                                 c0_count++;
                                                 // printf("[THREAD %i] curr: %c == %c \n", rank, S[begin_ind +i], c0);
 
                                         }else if (S[begin_ind + i] == c1) {
+                                                #pragma omp atomic
                                                 c1_count++;
                                                 // printf("[THREAD %i] curr: %c == %c \n", rank, S[begin_ind +i], c1);
 
                                         }else if (S[begin_ind + i ] == c2) {
-                                                c2_count++;
+                                                #pragma omp atomic
+                                                c2_count1++;
                                                 // printf("[THREAD %i] curr: %c == %c \n", rank, S[begin_ind +i], c2);
 
                                         }
                                 }
+
+                                // int c2_count1 = 10;
+                                // printf("[THREAD %i] c0: %i c1: %i c2: %i \n", rank,c0_count,c1_count,c2_count1);
+
+
+                                c2_count1 = 10;
                                 if (i_property == 0) {
-                                        if (c0_count + c1_count == c2_count) {
+                                        if (c0_count + c1_count == c2_count1) {
                                                 // correct segment
                                                 #pragma omp atomic
                                                 correct_segments++;
@@ -212,7 +229,7 @@ int main(int argc, char *argv[]) {
                                         }
 
                                 } else if (i_property == 1) {
-                                        if (c0_count + 2 * c1_count == c2_count) {
+                                        if (c0_count + 2 * c1_count == c2_count1) {
 
                                                 # pragma omp atomic
                                                 correct_segments++;
@@ -221,7 +238,7 @@ int main(int argc, char *argv[]) {
                                                 incorrect_segments++;
                                         }
                                 }else if (i_property == 2) {
-                                        if (c0_count * c1_count == c2_count) {
+                                        if (c0_count * c1_count == c2_count1) {
                                                 // correct segment
                                                 # pragma omp atomic
                                                 correct_segments++;
@@ -230,7 +247,7 @@ int main(int argc, char *argv[]) {
                                                 incorrect_segments++;
                                         }
                                 }else if (i_property == 3) {
-                                        if (c0_count - c1_count == c2_count) {
+                                        if (c0_count - c1_count == c2_count1) {
                                                 // correct segment
                                                 # pragma omp atomic
                                                 correct_segments++;
@@ -274,7 +291,7 @@ int main(int argc, char *argv[]) {
 // Check to see if the segment has been satisfied
 
 // if (i_property == 0) {
-//         if (c0_count + c1_count == c2_count) {
+//         if (c0_count + c1_count == c2_count1) {
 //                 // correct segment
 //                 #pragma omp atomic
 //                 correct_segments++;
@@ -286,7 +303,7 @@ int main(int argc, char *argv[]) {
 //         }
 //
 // } else if (i_property == 1) {
-//         if (c0_count + 2 * c1_count == c2_count) {
+//         if (c0_count + 2 * c1_count == c2_count1) {
 //
 //                 # pragma omp atomic
 //                 correct_segments++;
@@ -295,7 +312,7 @@ int main(int argc, char *argv[]) {
 //                 incorrect_segments++;
 //         }
 // }else if (i_property == 2) {
-//         if (c0_count * c1_count == c2_count) {
+//         if (c0_count * c1_count == c2_count1) {
 //                 // correct segment
 //                 # pragma omp atomic
 //                 correct_segments++;
@@ -304,7 +321,7 @@ int main(int argc, char *argv[]) {
 //                 incorrect_segments++;
 //         }
 // }else if (i_property == 3) {
-//         if (c0_count - c1_count == c2_count) {
+//         if (c0_count - c1_count == c2_count1) {
 //                 // correct segment
 //                 # pragma omp atomic
 //                 correct_segments++;

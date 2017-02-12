@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 
 
         S[L*M + 1] = '\0';
-        printf("%i\n", M*L);
+        // printf("%i\n", M*L);
         int curr_char = 0;
         int balance = 0;
 
@@ -259,15 +259,25 @@ int main(int argc, char *argv[]) {
                         }
                 }
         }
-        // printf("verifyied + corrseg: %i + inc: %i\n", correct_segments, incorrect_segments);
-// Print string at end
-        printf("correct_segments: %i\n", correct_segments);
-        printf("cinorrect_segments: %i\n", incorrect_segments);
+
+        printf( "%i\n", correct_segments);
+
+        // Print output to file
+        FILE *f = fopen("out.txt", "w");
+        if (f == NULL)
+        {
+                printf("Error opening file!\n");
+                exit(1);
+        }
 
         for (size_t i = 0; i < L*M; i++) {
-                printf("%c", S[i]);
+                fprintf(f, "%c", S[i]);
         }
-        printf("\n");
+        fprintf(f, "\n");
+        fprintf(f, "%i", correct_segments);
+
+        fprintf(f, "\n");
+        fclose(f);
         return 0;
 }
 

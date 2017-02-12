@@ -37,12 +37,7 @@ bool isNumeric(const char *str)
         }
         return true;
 }
-void printArray (char* a){
-        for (size_t i = 0; i < sizeof(a) / sizeof(a[0])
-             ; i++) {
-                printf (a[i]);
-        }
-}
+
 // Programs main thread
 int main(int argc, char *argv[]) {
 
@@ -89,7 +84,10 @@ int main(int argc, char *argv[]) {
         c2 = *argv[7];
 
         char S [L*M+1];
+
+
         S[L*M + 1] = '\0';
+        printf("%i\n", M*L);
         int curr_char = 0;
         int balance = 0;
 
@@ -97,7 +95,7 @@ int main(int argc, char *argv[]) {
         # pragma omp parallel num_threads(N) default(none) shared(S,M,L,c0,c1,c2, curr_char,balance) private (i_property)
         {
 
-                int rank = omp_get_thread_num();
+                // int rank = omp_get_thread_num();
                 char rank_char = (char) omp_get_thread_num() + 97;
 
                 for (;; ) {
@@ -125,7 +123,6 @@ int main(int argc, char *argv[]) {
                                 {
                                         S[curr_char] = rank_char;
                                         curr_char++;
-                                        // printf("%c\n", rank_char);
                                 }
                                 // if (i_property == 0) {
                                 //         if (rank_char == c0 || rank_char == c1) {
@@ -136,8 +133,7 @@ int main(int argc, char *argv[]) {
                                 //                 balance -=1;
                                 //         }
                                 // }
-                                printf("%i\n", balance);
-                                usleep(500);
+
                                 // printf("[THREAD %d] thread: %d of %d. Wait:%i miliseconds\n", rank, rank, M, r);
 
                                 // pthread_mutex_unlock(&mutex_S);
@@ -146,8 +142,174 @@ int main(int argc, char *argv[]) {
                         }
                 }
         }
+
+        # pragma omp barrier
+
         for (size_t i = 0; i < L*M; i++) {
                 printf("%c", S[i]);
         }
+        printf("\n");
+        int segment_counter = 0;
+        int begin_ind = 0;
+        bool loop = true;
+        int c0_count= 0;
+        int c1_count= 0;
+        int c2_count= 0;
+        int correct_segments = 0;
+        int incorrect_segments = 0;
+        // // Verify strings
+        # pragma omp parallel num_threads(N) default(none) shared(i_property,S,M,L,c0,c1,c2,segment_counter, correct_segments, incorrect_segments) private (loop, begin_ind, c0_count,c1_count,c2_count)
+        {
+                int rank = omp_get_thread_num();
+                // printf("asdasdasd\n");
+                loop = true;
+                c0_count= 0;
+                c1_count= 0;
+                c2_count= 0;
+                begin_ind = 0;
+                // run loop while there are segments to consume
+                while(loop) {
+                        // printf("[THREAD %i] segment_ counter: %i\n",rank, segment_counter);
+                        #pragma omp critical(segment)
+                        {
+                                if (segment_counter < L*M -1) {
+
+                                        begin_ind = segment_counter;
+                                        // printf("[THREAD %i] begin: %i seg:%i \n",rank, begin_ind,segment_counter);
+                                        segment_counter += L;
+                                }else{
+                                        loop = false;
+                                }
+                        }
+                        // If the loop ends dont do it
+                        if (loop) {
+                                // Count the items in a segment
+                                for (int i = 0; i < L; i++) {
+                                        if (S[begin_ind + i ] == c0) {
+                                                c0_count++;
+                                                // printf("[THREAD %i] curr: %c == %c \n", rank, S[begin_ind +i], c0);
+
+                                        }else if (S[begin_ind + i] == c1) {
+                                                c1_count++;
+                                                // printf("[THREAD %i] curr: %c == %c \n", rank, S[begin_ind +i], c1);
+
+                                        }else if (S[begin_ind + i ] == c2) {
+                                                c2_count++;
+                                                // printf("[THREAD %i] curr: %c == %c \n", rank, S[begin_ind +i], c2);
+
+                                        }
+                                }
+                                if (i_property == 0) {
+                                        if (c0_count + c1_count == c2_count) {
+                                                // correct segment
+                                                #pragma omp atomic
+                                                correct_segments++;
+                                                // printf("%s\n", );
+                                        }else{
+                                                # pragma omp atomic
+                                                incorrect_segments++;
+
+                                        }
+
+                                } else if (i_property == 1) {
+                                        if (c0_count + 2 * c1_count == c2_count) {
+
+                                                # pragma omp atomic
+                                                correct_segments++;
+                                        }else{
+                                                # pragma omp atomic
+                                                incorrect_segments++;
+                                        }
+                                }else if (i_property == 2) {
+                                        if (c0_count * c1_count == c2_count) {
+                                                // correct segment
+                                                # pragma omp atomic
+                                                correct_segments++;
+                                        }else{
+                                          # pragma omp atomic
+                                                incorrect_segments++;
+                                        }
+                                }else if (i_property == 3) {
+                                        if (c0_count - c1_count == c2_count) {
+                                                // correct segment
+                                                # pragma omp atomic
+                                                correct_segments++;
+                                        }else{
+                                                # pragma omp atomic
+                                                incorrect_segments++;
+                                        }
+                                }
+                        }
+                }
+        }
+        // printf("verifyied + corrseg: %i + inc: %i\n", correct_segments, incorrect_segments);
+// Print string at end
+        printf("correct_segments: %i\n", correct_segments);
+        printf("cinorrect_segments: %i\n", incorrect_segments);
+
+        for (size_t i = 0; i < L*M; i++) {
+                printf("%c", S[i]);
+        }
+        printf("\n");
         return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// printf("%i\n", c0_count);
+// Check to see if the segment has been satisfied
+
+// if (i_property == 0) {
+//         if (c0_count + c1_count == c2_count) {
+//                 // correct segment
+//                 #pragma omp atomic
+//                 correct_segments++;
+//                 // printf("%s\n", );
+//         }else{
+//                 # pragma omp atomic
+//                 incorrect_segments++;
+//
+//         }
+//
+// } else if (i_property == 1) {
+//         if (c0_count + 2 * c1_count == c2_count) {
+//
+//                 # pragma omp atomic
+//                 correct_segments++;
+//         }else{
+//                 # pragma omp atomic
+//                 incorrect_segments++;
+//         }
+// }else if (i_property == 2) {
+//         if (c0_count * c1_count == c2_count) {
+//                 // correct segment
+//                 # pragma omp atomic
+//                 correct_segments++;
+//         }else{
+//           # pragma omp atomic
+//                 incorrect_segments++;
+//         }
+// }else if (i_property == 3) {
+//         if (c0_count - c1_count == c2_count) {
+//                 // correct segment
+//                 # pragma omp atomic
+//                 correct_segments++;
+//         }else{
+//                 # pragma omp atomic
+//                 incorrect_segments++;
+//         }
+// }

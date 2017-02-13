@@ -7,7 +7,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <unistd.h>
-void threadFunc (void);
+
 // Command line arguments:
 //      /pal.x i N L M c0 c1 c2
 // i: index of the property Fi which each segment of S needs to satisfy
@@ -280,63 +280,3 @@ int main(int argc, char *argv[]) {
         fclose(f);
         return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// printf("%i\n", c0_count);
-// Check to see if the segment has been satisfied
-
-// if (i_property == 0) {
-//         if (c0_count + c1_count == c2_count1) {
-//                 // correct segment
-//                 #pragma omp atomic
-//                 correct_segments++;
-//                 // printf("%s\n", );
-//         }else{
-//                 # pragma omp atomic
-//                 incorrect_segments++;
-//
-//         }
-//
-// } else if (i_property == 1) {
-//         if (c0_count + 2 * c1_count == c2_count1) {
-//
-//                 # pragma omp atomic
-//                 correct_segments++;
-//         }else{
-//                 # pragma omp atomic
-//                 incorrect_segments++;
-//         }
-// }else if (i_property == 2) {
-//         if (c0_count * c1_count == c2_count1) {
-//                 // correct segment
-//                 # pragma omp atomic
-//                 correct_segments++;
-//         }else{
-//           # pragma omp atomic
-//                 incorrect_segments++;
-//         }
-// }else if (i_property == 3) {
-//         if (c0_count - c1_count == c2_count1) {
-//                 // correct segment
-//                 # pragma omp atomic
-//                 correct_segments++;
-//         }else{
-//                 # pragma omp atomic
-//                 incorrect_segments++;
-//         }
-// }

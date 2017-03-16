@@ -1,0 +1,16 @@
+LDFLAGS = -lm
+CFLAGS=-g -fopenmp
+CC=gcc
+
+
+MAIN= pa2.x
+
+all: $(MAIN)
+
+
+
+$(MAIN): pa2.o propertyEnforcer.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+
+clean:
+	$(RM) *.o $(MAIN)

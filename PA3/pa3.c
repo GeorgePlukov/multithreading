@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
@@ -296,4 +297,4 @@ int check_property(int segment) {
     	return 1;
     }
     return 0;
-}
+

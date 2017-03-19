@@ -11,6 +11,7 @@
 void validate_arguments();
 int init();
 int run();
+void write_output();
 void teardown();
 
 
@@ -24,7 +25,6 @@ char c0,c1,c2;
 /* gloabls for the segment values */
 const char* SEGMENT_FINISH = "-";
 int segment_length;
-int num_passed_segments;
 int num_segments;
 
 int thread_count;
@@ -79,20 +79,19 @@ int main(int argc, char ** argv) {
     	run();
     }
 	
+	write_output();
 
 
 	teardown();
 
 
-	clnt_destroy(clnt_app);
-	clnt_destroy(clnt_ver);
 	return 1;
 }
 
 
 
 void validate_arguments() {
-		return;
+	printf("valid args\n");
 }
 
 int init() {
@@ -102,6 +101,7 @@ int init() {
 
     // S is the final generated string
     S = calloc(max_str_size + 1, sizeof(char));
+    printf("init finished 1\n");
 
 	int *result;
 
@@ -111,12 +111,15 @@ int init() {
 		clnt_pcreateerror(server_moore);
 		return -1;
 	}
+	printf("init finished 2\n");
+
 	
 	result = rpcinitappendserver_1(&all_args, clnt_app);
 	if (result == (int *) NULL) {
 		clnt_perror(clnt_app,server_moore);
 		return -1;
 	}
+	printf("init finished 3\n");
 
 
 	/****  setup RPC init verify server ****/
@@ -125,6 +128,8 @@ int init() {
 		clnt_pcreateerror(server_moore);
 		return -1;
 	}
+	printf("init finished 4\n");
+
 
 	result = rpcinitverifyserver_1(&all_args, clnt_ver);
 	if (result == (int *) NULL) {
@@ -132,6 +137,7 @@ int init() {
 		return -1;
 	}
 
+	printf("init finished 5\n");
 
 
 	return 1;
@@ -146,10 +152,11 @@ int run() {
 	struct timespec sleepTime;
 	sleepTime.tv_sec = 0;
 
+	int *success_ret;
 	int success = 1;
 
 	/**  begin to attempt adding character c to the string in the Append_Server **/
-	while (success >= 0) {	
+	// while (success >= 0) {	
 		sleepTime.tv_nsec = MIN_SLEEP_TIME + rand() % MAX_SLEEP_TIME;
 		nanosleep(&sleepTime, NULL);
 
@@ -157,10 +164,11 @@ int run() {
 		// success == 0, c was added
 		// success == 1, c was NOT added
 		// success == -1, S is complete
-		success = (int*) rpcappend_1(&ptr_c, clnt_app);
+		success_ret = rpcappend_1(&ptr_c, clnt_app);
+		success = &success_ret;
 
 		printf("thread %d received success %d\n", rank, success );
-	}
+	// }
 
 
 	/** String in append server is complete, begin to check segments **/
@@ -170,20 +178,21 @@ int run() {
 	int valid_segment = 0;
 
 
-	while ( strcmp(segment,SEGMENT_FINISH) != 0 ) {
+	// while ( strcmp(segment,SEGMENT_FINISH) != 0 ) {
 
 		//rpcgetseg retuns "i,<seg>" where i is the index of seg
 		sscanf((char*)rpcgetseg_1(&rank,clnt_ver),"%d,%s",&seg_index, &segment);
-		printf("thread %d got segment %s with index %d\n",rank, segment, seg_index);
+		printf("thread %d got segment %s with index %d\n",rank, *segment, seg_index);
 		
 		//verify the segment is valid 
 		valid_segment =  check_property(segment);
 
 		if (valid_segment) {
 			tot_num_passed_segments += valid_segment;
+			//need to propely concat the segment to S GIVEN the index 
 			strcat(S,segment);
 		}
-	}
+	// }
 
 	return 1;
 }
@@ -242,6 +251,14 @@ int check_property(char* seg) {
     	return 1;
     }
     return 0;
+}
+
+
+
+void write_output() {
+	printf("String S has been built\n");
+	printf("S = %s, # of passed segments passed %d\n", S, tot_num_passed_segments);
+	printf("write result to file.\n");
 }
 
 void teardown() {

@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 
-#define APPENDPROG 0x12300001
+#define APPENDPROG 0x12340001
 #define APPENDVERS 1
 
 #if defined(__STDC__) || defined(__cplusplus)

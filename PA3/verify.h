@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 
-#define VERIFYPROG 0x12300002
+#define VERIFYPROG 0x12340002
 #define VERIFYVERS 1
 
 #if defined(__STDC__) || defined(__cplusplus)

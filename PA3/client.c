@@ -61,10 +61,10 @@ int main(int argc, char ** argv) {
 	sprintf(all_args, "%d,%d,%d,%d,%c,%c,%c,%s", \
 					property_index,thread_count,num_segments,segment_length,c0,c1,c2,host_name2);
 
-
+								
 	//ideally we would want to validate the arguments here
 	validate_arguments();
-	
+
 
 	//now we can initialize the program.
 	if (init() == -1) {
@@ -72,12 +72,14 @@ int main(int argc, char ** argv) {
 		return 1;
 	}
 
+
 	//start the program
 	#pragma omp parallel num_threads(thread_count) reduction(+ : tot_num_passed_segments)
     {
     	run();
     }
 	
+
 
 	teardown();
 
@@ -90,7 +92,7 @@ int main(int argc, char ** argv) {
 
 
 void validate_arguments() {
-	return;
+		return;
 }
 
 int init() {
@@ -197,11 +199,6 @@ int run() {
 
 
 
-
-
-
-
-
 //given a segment index, 0..M-1, check if it satisfies the property
 int check_property(char* seg) {
 
@@ -253,3 +250,4 @@ void teardown() {
 	free(all_args);
 	free(S);
 }
+

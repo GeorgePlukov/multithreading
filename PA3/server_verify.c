@@ -3,9 +3,16 @@
 #include "verify.h"
 #include <sys/socket.h>
 #include <ctype.h>
+#include <pthread.h>
 
 #define BUFLEN 512 //Max length of buffer
-#define PORT 8888 //The port on which to listen for incoming data
+#define PORT 8887 //The port on which to listen for incoming data
+
+void * listen_socket (void*);
+
+struct sockaddr_in si_me, si_other;
+int s, i, slen = sizeof(si_other), recv_len;
+char buf[BUFLEN];
 
 int * rpcinitverifyserver_1_svc(args, req)
 char * * args;
@@ -16,9 +23,7 @@ struct svc_req * req;
 
   //setup socket
 
-  struct sockaddr_in si_me, si_other;
-  int s, i, slen = sizeof(si_other), recv_len;
-  char buf[BUFLEN];
+
   //create a UDP socket
   if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
     // die("socket");
@@ -40,25 +45,36 @@ struct svc_req * req;
 			printf("[ERROR] Socket could not be bound to port: %d\n", PORT);
   }
 
+
+		pthread_t thread;
+		pthread_create(&thread, NULL,listen_socket, NULL);
   //keep listening for data
-  while (1) {
-    printf("Waiting for data...");
-    fflush(stdout);
-    //try to receive some data, this is a blocking call
-    if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr * ) & si_other, & slen)) == -1) {
-					printf("[ERROR] Message not properly received\n");
-					// return 1;
-    }
 
-    //print details of the client/peer and the data received
-    printf("Received from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
-    printf("Data: %s\n", buf);
-
-  }
-  close(s);
 
   status = 1;
   return (&status);
+}
+
+void * listen_socket (void* r){
+	int recv_len;
+	while (1) {
+			printf("Waiting for data...");
+			fflush(stdout);
+			//try to receive some data, this is a blocking call
+			if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr * ) & si_other, & slen)) == -1) {
+				printf("[ERROR] Message not properly received\n");
+				// return 1;
+			}else{
+				break;
+			}
+
+			//print details of the client/peer and the data received
+			printf("Received from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
+			printf("Data: %s\n", buf);
+
+	}
+	close(s);
+
 }
 
 char ** rpcgetseg_1_svc(args, req)
@@ -66,6 +82,6 @@ int * args;
 struct svc_req * req;
 {
 		static char * str = "asd";
-		
+
   return &str;
 }

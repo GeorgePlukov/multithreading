@@ -6,7 +6,7 @@
 
 
 #define BUFLEN 512  //Max length of buffer
-#define PORT 8888  //The port on which to listen for incoming data
+#define PORT 8887  //The port on which to listen for incoming data
 
 // rpcinitappendserver_1_svc
 // This function is used to initialize the server append function
@@ -82,10 +82,10 @@ int * rpcappend_1_svc(args, req)
 	struct svc_req *req;
 {
 	static int status;
-	// 
-	// if (sendto(s, "test", strlen("test") , 0 , (struct sockaddr *) &si_other, slen)==-1){
-	// 	printf("err\n" );
-	// }
+	//
+	if (sendto(s, "test", strlen("test") , 0 , (struct sockaddr *) &si_other, slen)==-1){
+		printf("err123\n" );
+	}
 	status = -1;
 
 	return (&status);

@@ -139,13 +139,6 @@ int init() {
 
 
 	return 1;
-
-	// result = rpcappend_1(&all_args, clnt_app);
-	// if (result == (int *) NULL) {
-	// 								clnt_perror(clnt_app,server_moore);
-	// 								return -1;
-	// }
-
 }
 
 int run() {
@@ -169,6 +162,8 @@ int run() {
 		// success == 0, c was added
 		// success == 1, c was NOT added
 		// success == -1, S is complete
+		size_t i = 0;
+
 		success_ret = rpcappend_1(&ptr_c, clnt_app);
 		success = &success_ret;
 
@@ -190,14 +185,14 @@ int run() {
 		printf("thread %d got segment %s with index %d\n",rank, *segment, seg_index);
 
 		//verify the segment is valid
-		valid_segment =  check_property(segment);
+		valid_segment = check_property(segment);
 
 		if (valid_segment) {
 			tot_num_passed_segments += valid_segment;
 			//need to propely concat the segment to S GIVEN the index
 			strcat(S,segment);
 		}
-	// }
+
 
 	return 1;
 }

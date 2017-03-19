@@ -1,4 +1,4 @@
-LDFLAGS = -lnsl
+LDFLAGS = -lnsl -lpthread
 CFLAGS=-g -Wall -fopenmp
 CC=gcc
 

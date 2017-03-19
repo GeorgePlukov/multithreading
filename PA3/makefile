@@ -1,9 +1,24 @@
-run: pa2.x
-	./pa2.x 1 2 3 4 a b c
-pa2.x: pa2.c
-	gcc -g -Wall -fopenmp -o pa2.x pa2.c -std=c99
+LDFLAGS = -lnsl
+CFLAGS=-g
+CC=gcc
+
+
+CLIENT= client
+APPEND= server_append
+VERIFY= server_verify
+
+all: $(CLIENT) $(APPEND)
+
+
+
+$(CLIENT): client.o append_clnt.o verify_clnt.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+
+$(APPEND): server_append.o append_svc.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+
+$(VERIFY): server_verify.o verify_svc.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 clean:
-	- rm *.o
-	- rm pa2.x
-	- rm out.txt
+	$(RM) *.o $(CLIENT) $(APPEND) $(VERIFY)

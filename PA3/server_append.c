@@ -3,6 +3,7 @@
 #include "append.h"
 #include <sys/socket.h>
 #include <ctype.h>
+#include <omp.h>
 
 
 #define BUFLEN 512  //Max length of buffer
@@ -109,9 +110,13 @@ int * rpcappend_1_svc(args, req)
 	static int status;
 	status = -1;
  	// all string building
+ 	char c = malloc(sizeof(char));
+ 	sscanf(*args, "%c", &c);
+ 	printf("got char %c \n", c );
+
 
 	// if stirng is done then setup server and send message
-	init_server_and_send_string(str);
+	//init_server_and_send_string(str);
 
-	return (&status); -1
+	return (&status); 
 }

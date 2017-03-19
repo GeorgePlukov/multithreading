@@ -139,12 +139,6 @@ int init() {
 
 	printf("init finished 5\n");
 
-	result = rpcappend_1(&all_args, clnt_app);
-	if (result == (int *) NULL) {
-		clnt_perror(clnt_app,server_moore);
-		return -1;
-	}
-	printf("init finished 6\n");
 	return 1;
 }
 
@@ -161,7 +155,7 @@ int run() {
 	int success = 1;
 
 	/**  begin to attempt adding character c to the string in the Append_Server **/
-	// while (success >= 0) {
+	while (success >= 0) {
 		sleepTime.tv_nsec = MIN_SLEEP_TIME + rand() % MAX_SLEEP_TIME;
 		nanosleep(&sleepTime, NULL);
 
@@ -175,7 +169,7 @@ int run() {
 		success = &success_ret;
 
 		printf("thread %d received success %d\n", rank, success );
-	// }
+	}
 
 
 	/** String in append server is complete, begin to check segments **/

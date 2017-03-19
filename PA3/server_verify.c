@@ -17,13 +17,13 @@ int * rpcinitverifyserver_1_svc(args, req)
 }
 
 
-int * rpcgetseg_1_svc(args, req)
-	char** args;
+char ** rpcgetseg_1_svc(args, req)
+	int* args;
 	struct svc_req *req;
 
 {
-	static int status;
+	printf("getSeg got %d\n", *args);
 
-	status = 0;
-	return (&status);
+	static char* le_segment = "bob";
+	return (&le_segment);
 }

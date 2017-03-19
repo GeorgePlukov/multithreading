@@ -38,6 +38,6 @@ int * rpcappend_1_svc(args, req)
 {
 	static int status;
 
-	status = 0;
+	status = -1;
 	return (&status);
 }

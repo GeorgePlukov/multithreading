@@ -1,5 +1,5 @@
 LDFLAGS = -lnsl
-CFLAGS=-g
+CFLAGS=-g -Wall -fopenmp
 CC=gcc
 
 

@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 
-#define VERIFYPROG 0x12300002
+#define VERIFYPROG 0x12340002
 #define VERIFYVERS 1
 
 #if defined(__STDC__) || defined(__cplusplus)
@@ -22,8 +22,8 @@ extern "C" {
 extern  int * rpcinitverifyserver_1(char **, CLIENT *);
 extern  int * rpcinitverifyserver_1_svc(char **, struct svc_req *);
 #define RPCGetSeg 2
-extern  int * rpcgetseg_1(char **, CLIENT *);
-extern  int * rpcgetseg_1_svc(char **, struct svc_req *);
+extern  char ** rpcgetseg_1(int *, CLIENT *);
+extern  char ** rpcgetseg_1_svc(int *, struct svc_req *);
 extern int verifyprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -31,8 +31,8 @@ extern int verifyprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 extern  int * rpcinitverifyserver_1();
 extern  int * rpcinitverifyserver_1_svc();
 #define RPCGetSeg 2
-extern  int * rpcgetseg_1();
-extern  int * rpcgetseg_1_svc();
+extern  char ** rpcgetseg_1();
+extern  char ** rpcgetseg_1_svc();
 extern int verifyprog_1_freeresult ();
 #endif /* K&R C */
 

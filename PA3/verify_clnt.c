@@ -24,15 +24,15 @@ rpcinitverifyserver_1(char **argp, CLIENT *clnt)
 	return (&clnt_res);
 }
 
-int *
-rpcgetseg_1(char **argp, CLIENT *clnt)
+char **
+rpcgetseg_1(int *argp, CLIENT *clnt)
 {
-	static int clnt_res;
+	static char *clnt_res;
 
 	memset((char *)&clnt_res, 0, sizeof(clnt_res));
 	if (clnt_call (clnt, RPCGetSeg,
-		(xdrproc_t) xdr_wrapstring, (caddr_t) argp,
-		(xdrproc_t) xdr_int, (caddr_t) &clnt_res,
+		(xdrproc_t) xdr_int, (caddr_t) argp,
+		(xdrproc_t) xdr_wrapstring, (caddr_t) &clnt_res,
 		TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}

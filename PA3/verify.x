@@ -1,6 +1,6 @@
 program VERIFYPROG {
 	version VERIFYVERS {
 		int RPCINITVERIFYSERVER(string) = 1;
-		int RPCGetSeg(string) = 2;
+		string RPCGetSeg(int) = 2;
 	} = 1;
-} = 0x12300002;
+} = 0x12340002;

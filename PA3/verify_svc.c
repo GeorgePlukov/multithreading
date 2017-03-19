@@ -21,7 +21,7 @@ verifyprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
 	union {
 		char *rpcinitverifyserver_1_arg;
-		char *rpcgetseg_1_arg;
+		int rpcgetseg_1_arg;
 	} argument;
 	char *result;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -39,8 +39,8 @@ verifyprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		break;
 
 	case RPCGetSeg:
-		_xdr_argument = (xdrproc_t) xdr_wrapstring;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_argument = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_wrapstring;
 		local = (char *(*)(char *, struct svc_req *)) rpcgetseg_1_svc;
 		break;
 

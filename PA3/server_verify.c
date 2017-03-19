@@ -27,6 +27,7 @@ struct svc_req * req;
 				perror("test");
   }
 
+
   // zero out the structure
   memset((char * ) & si_me, 0, sizeof(si_me));
 
@@ -43,7 +44,6 @@ struct svc_req * req;
   while (1) {
     printf("Waiting for data...");
     fflush(stdout);
-
     //try to receive some data, this is a blocking call
     if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr * ) & si_other, & slen)) == -1) {
 					printf("[ERROR] Message not properly received\n");
@@ -61,12 +61,11 @@ struct svc_req * req;
   return (&status);
 }
 
-int * rpcgetseg_1_svc(args, req)
-char * * args;
+char ** rpcgetseg_1_svc(args, req)
+int * args;
 struct svc_req * req;
 {
-  static int status;
-
-  status = 0;
-  return ( & status);
+		static char * str = "asd";
+		
+  return &str;
 }

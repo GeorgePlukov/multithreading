@@ -82,11 +82,11 @@ int * rpcappend_1_svc(args, req)
 	struct svc_req *req;
 {
 	static int status;
-
-
-	if (sendto(s, "test", strlen("test") , 0 , (struct sockaddr *) &si_other, slen)==-1){
-		printf("err\n" );
-	}
+	// 
+	// if (sendto(s, "test", strlen("test") , 0 , (struct sockaddr *) &si_other, slen)==-1){
+	// 	printf("err\n" );
+	// }
+	status = -1;
 
 	return (&status);
 }

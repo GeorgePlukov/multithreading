@@ -57,7 +57,7 @@ int main(int argc, char ** argv) {
 								sprintf(all_args, "%d,%d,%d,%d,%c,%c,%c,%s", \
 																property_index,thread_count,num_segments,segment_length,c0,c1,c2,host_name2);
 
-								
+
 								//ideally we would want to validate the arguments here
 								validate_arguments();
 
@@ -115,8 +115,11 @@ int init() {
 																return -1;
 								}
 
-
-
+								result = rpcappend_1(&all_args, clnt_app);
+								if (result == (int *) NULL) {
+																clnt_perror(clnt_app,server_moore);
+																return -1;
+								}
 								return 1;
 }
 

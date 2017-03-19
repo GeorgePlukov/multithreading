@@ -6,7 +6,11 @@
 
 
 #define BUFLEN 512  //Max length of buffer
-#define PORT 8887  //The port on which to listen for incoming data
+#define PORT 8885  //The port on which to listen for incoming data
+
+int count = 0;
+char *str = "this is a string";
+char* hn = "130.113.68.130";
 
 // rpcinitappendserver_1_svc
 // This function is used to initialize the server append function
@@ -23,15 +27,11 @@ int * rpcinitappendserver_1_svc(args, req)
 	//"F,N,L,M,c0,c1,c2,host_name2"
 	int F, N, L, M;
 	char c0, c1, c2;
-	char* host_name2 = "130.113.68.130";
 	printf("%s\n",*args );
 
 	// NOT WORKING! :(
 	sscanf(*args, "%d,%d,%d,%d,%c,%c,%c", &F,&N,&L,&M,&c0,&c1,&c2);
 	printf("%d,%d,%d,%d,%c,%c,%c\n", F, N,L,M,c0,c1,c2);
-
-	printf("Set up udp server\n");
-	init_udp_server(host_name2);
 
 	status = 1;
 	return (&status);
@@ -46,35 +46,60 @@ char buf[BUFLEN];
 char message[BUFLEN];
 
 
+
+void die(char *s)
+{
+    perror(s);
+    exit(1);
+}
+
 // set up the server
-int init_udp_server(char * hostname){
-	s, slen = sizeof(si_other);
+int init_server_and_send_string(char * str){
+	struct sockaddr_in si_other;
+    int s, i, slen=sizeof(si_other);
+    char buf[BUFLEN];
+    char message[BUFLEN];
 
-		//create a UDP socket
-	if ((s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1){
-		// socket error on creation
-		return 1;
-	}
+    if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+    {
+        die("socket");
+    }
 
-	memset((char *) &si_me, 0, sizeof(si_me));
-	si_me.sin_family = AF_INET;
-	si_me.sin_port = htons(PORT);
+    memset((char *) &si_other, 0, sizeof(si_other));
+    si_other.sin_family = AF_INET;
+    si_other.sin_port = htons(PORT);
 
-	if (inet_aton(hostname , &si_other.sin_addr) == 0){
-		fprintf(stderr, "inet_aton() failed\n");
-		exit(1);
-	}
+    if (inet_aton(hn , &si_other.sin_addr) == 0)
+    {
+        fprintf(stderr, "inet_aton() failed\n");
+        exit(1);
+    }
 
-	// if (sendto(s, "test", strlen("test") , 0 , (struct sockaddr *) &si_other, slen)==-1){
-	// 	printf("err\n" );
-	// }
-	// printf("test2\n" );
-	//receive a reply and print it
-	//clear the buffer by filling null, it might have previously received data
-	memset(buf,'\0', BUFLEN);
-	puts(buf);
+    while(1)
+    {
+        printf("Enter message : ");
+        gets(message);
 
+        //send the message
+        if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
+        {
+            die("sendto()");
+        }
 
+        //receive a reply and print it
+        //clear the buffer by filling null, it might have previously received data
+        memset(buf,'\0', BUFLEN);
+        //try to receive some data, this is a blocking call
+        if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen) == -1)
+        {
+            die("recvfrom()");
+        }
+
+        puts(buf);
+    }
+
+    close(s);
+    return 0;
 }
 
 int * rpcappend_1_svc(args, req)
@@ -82,11 +107,11 @@ int * rpcappend_1_svc(args, req)
 	struct svc_req *req;
 {
 	static int status;
-	//
-	if (sendto(s, "test", strlen("test") , 0 , (struct sockaddr *) &si_other, slen)==-1){
-		printf("err123\n" );
-	}
 	status = -1;
+ 	// all string building
 
-	return (&status);
+	// if stirng is done then setup server and send message
+	init_server_and_send_string(str);
+
+	return (&status); -1
 }

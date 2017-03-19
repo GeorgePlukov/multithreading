@@ -7,6 +7,9 @@
 #include "verify.h"
 
 
+#define BUFLEN 512  //Max length of buffer
+#define PORT 8885
+#define SERVER "130.113.68.130"
 /* function declarations */
 void validate_arguments();
 int init();
@@ -93,7 +96,6 @@ void validate_arguments() {
 }
 
 int init() {
-
 	//for generating random numbers
     srand(time(NULL));
 
@@ -104,7 +106,7 @@ int init() {
 	int *result;
 
 	/****  setup RPC init append server ****/
-	clnt_app = clnt_create(server_moore,APPENDPROG,APPENDVERS,"udp");
+	clnt_app = clnt_create(server_moore,APPENDPROG,APPENDVERS,"tcp");
 	if (clnt_app == (CLIENT *)NULL) {
 		clnt_pcreateerror(server_moore);
 		return -1;
@@ -137,7 +139,12 @@ int init() {
 
 	printf("init finished 5\n");
 
-
+	result = rpcappend_1(&all_args, clnt_app);
+	if (result == (int *) NULL) {
+		clnt_perror(clnt_app,server_moore);
+		return -1;
+	}
+	printf("init finished 6\n");
 	return 1;
 }
 

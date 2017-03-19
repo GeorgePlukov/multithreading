@@ -16,9 +16,11 @@ $(CLIENT): client.o append_clnt.o verify_clnt.o
 
 $(APPEND): server_append.o append_svc.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
-
+	./server_append
 $(VERIFY): server_verify.o verify_svc.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+	./server_verify
+
 
 clean:
 	$(RM) *.o $(CLIENT) $(APPEND) $(VERIFY)

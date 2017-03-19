@@ -77,10 +77,7 @@ void * listen_socket (void* r){
         printf("Data: %s\n" , buf);
 
     }
-
     close(s);
-
-
 }
 
 char ** rpcgetseg_1_svc(args, req)

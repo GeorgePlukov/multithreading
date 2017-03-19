@@ -11,7 +11,7 @@
 int count = 0;
 char *str = "this is a string";
 char* hn = "130.113.68.130";
-
+int submit = 0;
 // rpcinitappendserver_1_svc
 // This function is used to initialize the server append function
 // It gets teh params, creates a udp link to rpcinitverifyserver_1_svc and
@@ -62,7 +62,7 @@ int init_server_and_send_string(char * str){
 
     if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
     {
-        die("socket");
+     die("socket");
     }
 
     memset((char *) &si_other, 0, sizeof(si_other));
@@ -71,32 +71,18 @@ int init_server_and_send_string(char * str){
 
     if (inet_aton(hn , &si_other.sin_addr) == 0)
     {
-        fprintf(stderr, "inet_aton() failed\n");
-        exit(1);
+     fprintf(stderr, "inet_aton() failed\n");
+     exit(1);
     }
 
-    while(1)
-    {
-        printf("Enter message : ");
-        gets(message);
+				//send the message
+				if (sendto(s, str, strlen(str) , 0 , (struct sockaddr *) &si_other, slen)==-1){
+    	die("sendto()");
+				}
 
-        //send the message
-        if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &si_other, slen)==-1)
-        {
-            die("sendto()");
-        }
-
-        //receive a reply and print it
-        //clear the buffer by filling null, it might have previously received data
-        memset(buf,'\0', BUFLEN);
-        //try to receive some data, this is a blocking call
-        if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen) == -1)
-        {
-            die("recvfrom()");
-        }
-
-        puts(buf);
-    }
+    //receive a reply and print it
+    //clear the buffer by filling null, it might have previously received data
+    memset(buf,'\0', BUFLEN);
 
     close(s);
     return 0;
@@ -110,8 +96,12 @@ int * rpcappend_1_svc(args, req)
 	status = -1;
  	// all string building
 
-	// if stirng is done then setup server and send message
-	init_server_and_send_string(str);
 
-	return (&status); -1
+
+	// if string is done then setup server and send message
+	if (submit == 0){
+		submit = 1;
+		init_server_and_send_string(str);
+	}
+	return (&status);
 }

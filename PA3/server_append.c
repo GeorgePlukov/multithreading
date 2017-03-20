@@ -117,7 +117,7 @@ int * rpcappend_1_svc(args, req)
  
  	if (current_str_pos >= num_seg*seg_length) {
  		status = -1;
- 		return (&status);
+ 		submit = 0;
  	}
  	else {
  		str[current_str_pos] = c;
@@ -152,6 +152,7 @@ int * rpcappend_1_svc(args, req)
     printf("char %c  on seg %d added to string %s %d\n",c, curr_seg, str, current_str_pos);
     if (current_str_pos >= seg_length*num_seg) {
     	status = -1;
+    	submit = 0;
     }
 
 	// if string is done then setup server and send message

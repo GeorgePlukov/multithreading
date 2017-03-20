@@ -14,7 +14,7 @@ all: $(CLIENT) $(APPEND)
 $(CLIENT): client.o append_clnt.o verify_clnt.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
-$(APPEND): server_append.o append_svc.o
+$(APPEND): server_append.o append_svc.o propertyEnforcer.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 	./server_append
 $(VERIFY): server_verify.o verify_svc.o

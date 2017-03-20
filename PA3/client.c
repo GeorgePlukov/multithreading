@@ -52,8 +52,8 @@ int main(int argc, char ** argv) {
 
 	property_index = atoi(argv[1]);
 	thread_count   = atoi(argv[2]);
-	num_segments   = atoi(argv[3]);
-	segment_length = atoi(argv[4]);
+	segment_length = atoi(argv[3]);
+	num_segments   = atoi(argv[4]);
 	c0 = argv[5][0];
 	c1 = argv[6][0];
 	c2 = argv[7][0];
@@ -91,8 +91,38 @@ int main(int argc, char ** argv) {
 
 
 
+//quick check to see if arguments are valid.
 void validate_arguments() {
-	printf("valid args\n");
+
+	int valid = 1;
+	if (thread_count < 3 || thread_count > 8) {
+		valid = 0;
+	}
+	if (property_index < 0 || property_index > 3) {
+		valid = 0;
+	}
+	if (segment_length < 1 || num_segments < 1) {
+		valid = 0;
+	}
+
+	if ( (segment_length % 2 == 1) && thread_count == 3 && (property_index == 0 || property_index == 3 )) {
+		printf("Impossible configuration:  3 letters and odd number of spaces per segment\n");
+		exit(0);
+	}
+
+    if ((segment_length <= 1) && thread_count == 3 && (property_index == 0 || property_index == 1 || property_index == 3 )) {
+        printf("Impossible configuration\n");
+        exit(0);
+    }
+    if ( (segment_length < 2) &&  property_index == 2 && thread_count == 3){
+        printf("Impossible configuration for Property 3\n");
+        exit(0);
+    }
+	if (!valid) {
+		printf("invalid arguments given\n");
+		exit(0);
+	}
+
 }
 
 int init() {
@@ -165,13 +195,16 @@ int run() {
 		// success == -1, S is complete
 		size_t i = 0;
 
-		success_ret = rpcappend_1(&ptr_c, clnt_app);
-		success = &success_ret;
+		#pragma omp critical
+			success_ret = rpcappend_1(&ptr_c, clnt_app);
+
+
+		success = *success_ret;
 
 		printf("thread %d received success %d\n", rank, success );
 	}
 
-
+	exit(1);
 	/** String in append server is complete, begin to check segments **/
 
 	char* segment = "";

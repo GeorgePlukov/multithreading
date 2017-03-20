@@ -7,7 +7,9 @@
 #define _APPEND_H_RPCGEN
 
 #include <rpc/rpc.h>
+#include "propertyEnforcer.h"
 
+int  enforce ( int index, int off, char c);
 
 #ifdef __cplusplus
 extern "C" {

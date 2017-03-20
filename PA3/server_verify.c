@@ -15,8 +15,7 @@ void * listen_socket (void*);
 char * str;
 int currentSegment= 0;
 
-int * rpcinitverifyserver_1_svc(args, req)
-char * * args;
+int * rpcinitverifyserver_1_svc(req)
 struct svc_req * req;
 {
   static int status;
@@ -41,8 +40,8 @@ void * listen_socket (void* r){
     //create a UDP socket
     if ((s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
     {
-					printf("[ERROR] Socket not properly created\n");
-					exit(1);
+		printf("[ERROR] Socket not properly created\n");
+		exit(1);
     }
 
     // zero out the structure
@@ -54,9 +53,9 @@ void * listen_socket (void* r){
 
     //bind socket to port
     if( bind(s , (struct sockaddr*)&si_me, sizeof(si_me) ) == -1){
-					printf("[ERROR] Socket not properly bound\n");
-					exit(1);
-				}
+		printf("[ERROR] Socket not properly bound\n");
+		exit(1);
+	}
 
     //keep listening for data
 
@@ -66,79 +65,65 @@ void * listen_socket (void* r){
 								// Listen for data coming into the port
         if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen)) == -1)
         {
-									printf("[ERROR] Error receiving data from socket\n");
-									exit(1);
+			printf("[ERROR] Error receiving data from socket\n");
+			exit(1);
         }
 
-								// print the data that came in
-        printf("\nData: %s\n" , buf);
+		// allocate new memory for array
+		str = calloc(recv_len+1, sizeof(char));
 
-								// allocate new memory for array
-								size_t len = strlen(buf);
-								printf("%d\n", len);
+		int d;
+		for (d = 0; d < recv_len; d++) {
+			str[d] = buf[d];
+		}
+		str[d] = '\0';
+		printf("str = %s.\n", str);
 
-								str = calloc(len+1, sizeof(char));
-
-								int d;
-								for (d = 0; d < len; d++) {
-									str[d] = buf[d];
-								}
-
-								//print stored string val
-								for (d = 0; d < len; d++) {
-									printf("%c", str[d]);
-								}
-								// printf("\n");
-								//
-								// printf("test\n");
     close(s);
 				return;
 }
 
-char ** rpcgetseg_1_svc(args, req)
-int * args;
+
+int current_index = 0;
+
+my_struct * rpcgetseg_1_svc(args, req)
+int  args;
 struct svc_req * req;
 {
-		// n is the number of characters in a segment
-		int * n = args;
-		int len = strlen(str);
+	int seg_len = args;
 
-		int length = 1;
-		while ( currentSegment /= 10 )
-   length++;
-		float total_segment = (float) len / (float) *n;
-		int rounded_total = floor(total_segment);
+	// char* text = malloc(sizeof(char)*(seg_len+1) + sizeof(int)*5);
 
+	static my_struct response;                                                 
+	static char text[255]; 
+	memset(&response, '\0', sizeof(my_struct));                                
+	memset(text, '\0', sizeof(text));  
 
-		char* r_string = calloc(rounded_total + length+1, sizeof(char));
+	if (current_index < strlen(str)/seg_len) {
 
-		printf("%d %d\n", currentSegment, rounded_total);
-		// if there is still segments to give
-		if (currentSegment < total_segment){
-			sprintf(r_string,"%d,", currentSegment);
-			int j, i;
-			for (j = currentSegment * rounded_total, i = length +1; j< rounded_total; j++, i++){
-				printf("str[%d]: %c\n", j,str[j]);
-				r_string[i] = str[j];
-				printf("String: %s\n", r_string);
+		char* seg = malloc(sizeof(char)*(seg_len+1));
 
-			}
-
-
-			currentSegment += 1;
+		int starting_position = current_index*seg_len;
+		
+		int i;
+		for (i = 0; i < seg_len; i++) {
+			printf("appending %c\n", str[starting_position]);
+			seg[i] = str[starting_position++];
 		}
-		// last segment
-		else{
-			// int ind;
-			// for (ind = 0; ind< n; ind++){
-			// 	printf("%c", str[ind]);
-			// }
-			// printf("\n");
-			// free (str);
-		}
+		seg[i] = '\0';
+		printf("seg = %s\n",seg);
 
-		printf("segment: %s\n", r_string);
-		printf("");
-		// returns the location of the first item in regards to where the string is "," the segment
-  return r_string;
+		sprintf(text,"%d,%s", current_index, seg);
+		current_index+=1;
+		free(seg);
+	}
+
+	else {
+		sprintf(text,"%d,%s%c",current_index,"-",'\0');
+	}
+
+	printf("Sending over: %s.\n",text);
+	response.data = text; 
+
+	return (&response);
 }

@@ -11,9 +11,9 @@
 
 int count = 0;
 char *str;
-char* hn = "130.113.68.130";
+char* host_name2;
 int submit = 1;
-
+int str_sent = 0;
 int property_index, thread_count, seg_length, num_seg;
 char c0, c1, c2;
 
@@ -31,12 +31,9 @@ int * rpcinitappendserver_1_svc(args, req)
 	//split up the args to get the values
 	//"property_index,thread_count,seg_length,num_seg,c0,c1,c2,host_name2"
 
-	printf("%s\n",*args );
-
-	// NOT WORKING! :(
-	sscanf(*args, "%d,%d,%d,%d,%c,%c,%c", &property_index,&thread_count,&seg_length,&num_seg,&c0,&c1,&c2);
-	printf("%d,%d,%d,%d,%c,%c,%c\n", property_index, thread_count,seg_length,num_seg,c0,c1,c2);
-
+  host_name2 = malloc(sizeof(char)*30);
+	sscanf(*args, "%d,%d,%d,%d,%c,%c,%c,%s", &property_index,&thread_count,&seg_length,&num_seg,&c0,&c1,&c2, host_name2);
+	printf("%d,%d,%d,%d,%c,%c,%c,%s\n", property_index, thread_count,seg_length,num_seg,c0,c1,c2,host_name2);
 
 	str = calloc( num_seg*seg_length + 1, sizeof(char));
 
@@ -63,36 +60,40 @@ void die(char *s)
 // set up the server
 int init_server_and_send_string(char * str){
 	struct sockaddr_in si_other;
-    int s, i, slen=sizeof(si_other);
-    char buf[BUFLEN];
-    char message[BUFLEN];
+  int s, i, slen=sizeof(si_other);
+  char buf[BUFLEN];
+  char message[BUFLEN];
 
-    if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-    {
-     die("socket");
-    }
+  if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+    die("socket");
+  }
 
-    memset((char *) &si_other, 0, sizeof(si_other));
-    si_other.sin_family = AF_INET;
-    si_other.sin_port = htons(PORT);
+  memset((char *) &si_other, 0, sizeof(si_other));
+  si_other.sin_family = AF_INET;
+  si_other.sin_port = htons(PORT);
 
-    if (inet_aton(hn , &si_other.sin_addr) == 0)
-    {
-     fprintf(stderr, "inet_aton() failed\n");
-     exit(1);
-    }
+  if (inet_aton(host_name2 , &si_other.sin_addr) == 0)
+  {
+   fprintf(stderr, "inet_aton() failed\n");
+   exit(1);
+  }
 
-				//send the message
-				if (sendto(s, str, strlen(str) , 0 , (struct sockaddr *) &si_other, slen)==-1){
-    	die("sendto()");
-				}
+			//send the message
+      str[strlen(str)] = '\0';
+      if (!str_sent) {
+        printf("sending over string %s.\n",str );
+  			if (sendto(s, str, strlen(str) , 0 , (struct sockaddr *) &si_other, slen)==-1) {
+          die("sendto()");
+        }
+        str_sent = 1;
+			}
 
-    //receive a reply and print it
-    //clear the buffer by filling null, it might have previously received data
-    memset(buf,'\0', BUFLEN);
+  //receive a reply and print it
+  //clear the buffer by filling null, it might have previously received data
+  memset(buf,'\0', BUFLEN);
 
-    close(s);
-    return 0;
+  close(s);
+  return 0;
 }
 
 
@@ -157,7 +158,7 @@ int * rpcappend_1_svc(args, req)
     }
 
 	// if string is done then setup server and send message
-	if (submit == 0){
+	if (submit == 0 && !str_sent){
 		submit = 1;
 		init_server_and_send_string(str);
 	}

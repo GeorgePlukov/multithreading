@@ -162,7 +162,7 @@ int init() {
 	printf("init finished 4\n");
 
 
-	result = rpcinitverifyserver_1(&all_args, clnt_ver);
+	result = rpcinitverifyserver_1(clnt_ver);
 	if (result == (int *) NULL) {
 		clnt_perror(clnt_ver,server_moore);
 		return -1;
@@ -190,12 +190,12 @@ int run() {
 		sleepTime.tv_nsec = MIN_SLEEP_TIME + rand() % MAX_SLEEP_TIME;
 		nanosleep(&sleepTime, NULL);
 
-		//RPC to try an append string
-		// success == 0, c was added
-		// success == 1, c was NOT added
-		// success == -1, S is complete
+			//RPC to try an append string
+			// success == 0, c was added
+			// success == 1, c was NOT added
+			// success == -1, S is complete
 
-		#pragma omp critical
+			#pragma omp critical
 			success_ret = rpcappend_1(&ptr_c, clnt_app);
 		success = *success_ret;
 
@@ -212,21 +212,30 @@ int check_segment() {
 
 
 	int rank = omp_get_thread_num();
-	char* segment = "";
-	int seg_index = -1;
+	char* segment = malloc(sizeof(char)*(segment_length+1));
+	int seg_index;
 	int valid_segment = 0;
 
-	printf("%s\n", "client break");
 
-	while ( strcmp(segment,SEGMENT_FINISH) != 0 ) {
+	my_struct *response = malloc(sizeof(*response));
 
-		//rpcgetseg retuns "i,<seg>" where i is the index of seg
-		printf("%s \n", &rpcgetseg_1(&segment_length,clnt_ver));
-		// sscanf(rpcgetseg_1(&segment_length,clnt_ver),"%d,%s",&seg_index, &segment);
+	while ( 1 ) {
+
+		#pragma omp critical
+			response = rpcgetseg_1(segment_length,clnt_ver);
+		// printf("rsp.data = %s\n", response->data);
+		char* q = malloc(strlen(response->data));
+		q = response->data;
+		sscanf(q, "%d,%s", &seg_index, segment);
 
 
+		if (strcmp(segment,SEGMENT_FINISH) == 0) {
+			printf("done checking segments\n");
+			break;
+		}
 
-		printf("thread %d got segment %s with index %d\n",rank, segment, seg_index);
+
+		
 
 
 		//verify the segment is valid

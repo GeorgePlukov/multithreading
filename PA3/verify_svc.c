@@ -16,11 +16,22 @@
 #define SIG_PF void(*)(int)
 #endif
 
+static int *
+_rpcinitverifyserver_1 (void  *argp, struct svc_req *rqstp)
+{
+	return (rpcinitverifyserver_1_svc(rqstp));
+}
+
+static my_struct *
+_rpcgetseg_1 (int  *argp, struct svc_req *rqstp)
+{
+	return (rpcgetseg_1_svc(*argp, rqstp));
+}
+
 static void
 verifyprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
 	union {
-		char *rpcinitverifyserver_1_arg;
 		int rpcgetseg_1_arg;
 	} argument;
 	char *result;
@@ -33,15 +44,15 @@ verifyprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		return;
 
 	case RPCINITVERIFYSERVER:
-		_xdr_argument = (xdrproc_t) xdr_wrapstring;
+		_xdr_argument = (xdrproc_t) xdr_void;
 		_xdr_result = (xdrproc_t) xdr_int;
-		local = (char *(*)(char *, struct svc_req *)) rpcinitverifyserver_1_svc;
+		local = (char *(*)(char *, struct svc_req *)) _rpcinitverifyserver_1;
 		break;
 
 	case RPCGetSeg:
 		_xdr_argument = (xdrproc_t) xdr_int;
-		_xdr_result = (xdrproc_t) xdr_wrapstring;
-		local = (char *(*)(char *, struct svc_req *)) rpcgetseg_1_svc;
+		_xdr_result = (xdrproc_t) xdr_my_struct;
+		local = (char *(*)(char *, struct svc_req *)) _rpcgetseg_1;
 		break;
 
 	default:

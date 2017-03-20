@@ -14,16 +14,23 @@ extern "C" {
 #endif
 
 
+typedef char *str_t;
+
+struct my_struct {
+	str_t data;
+};
+typedef struct my_struct my_struct;
+
 #define VERIFYPROG 0x12340002
 #define VERIFYVERS 1
 
 #if defined(__STDC__) || defined(__cplusplus)
 #define RPCINITVERIFYSERVER 1
-extern  int * rpcinitverifyserver_1(char **, CLIENT *);
-extern  int * rpcinitverifyserver_1_svc(char **, struct svc_req *);
+extern  int * rpcinitverifyserver_1(CLIENT *);
+extern  int * rpcinitverifyserver_1_svc(struct svc_req *);
 #define RPCGetSeg 2
-extern  char ** rpcgetseg_1(int *, CLIENT *);
-extern  char ** rpcgetseg_1_svc(int *, struct svc_req *);
+extern  my_struct * rpcgetseg_1(int , CLIENT *);
+extern  my_struct * rpcgetseg_1_svc(int , struct svc_req *);
 extern int verifyprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -31,9 +38,21 @@ extern int verifyprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 extern  int * rpcinitverifyserver_1();
 extern  int * rpcinitverifyserver_1_svc();
 #define RPCGetSeg 2
-extern  char ** rpcgetseg_1();
-extern  char ** rpcgetseg_1_svc();
+extern  my_struct * rpcgetseg_1();
+extern  my_struct * rpcgetseg_1_svc();
 extern int verifyprog_1_freeresult ();
+#endif /* K&R C */
+
+/* the xdr functions */
+
+#if defined(__STDC__) || defined(__cplusplus)
+extern  bool_t xdr_str_t (XDR *, str_t*);
+extern  bool_t xdr_my_struct (XDR *, my_struct*);
+
+#else /* K&R C */
+extern bool_t xdr_str_t ();
+extern bool_t xdr_my_struct ();
+
 #endif /* K&R C */
 
 #ifdef __cplusplus

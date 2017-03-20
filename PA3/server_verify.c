@@ -102,42 +102,42 @@ struct svc_req * req;
 		int * n = args;
 		int len = strlen(str);
 
-
-		printf("%d ... %d\n",*args, len-1);
-
 		int length = 1;
 		while ( currentSegment /= 10 )
    length++;
-		printf("length of ind: %d\n", length);
 		float total_segment = (float) len / (float) *n;
-		printf("1 %f\n", total_segment);
 		int rounded_total = floor(total_segment);
-		printf("2 %f\n", rounded_total);
 
-		char* r_string = calloc(rounded_total + length, sizeof(char));
 
+		char* r_string = calloc(rounded_total + length+1, sizeof(char));
+
+		printf("%d %d\n", currentSegment, rounded_total);
 		// if there is still segments to give
-		if (currentSegment < rounded_total){
-			sprintf(str,"%ld", currentSegment);
+		if (currentSegment < total_segment){
+			sprintf(r_string,"%d,", currentSegment);
+			int j, i;
+			for (j = currentSegment * rounded_total, i = length +1; j< rounded_total; j++, i++){
+				printf("str[%d]: %c\n", j,str[j]);
+				r_string[i] = str[j];
+				printf("String: %s\n", r_string);
 
-			int d;
-			for (d = 0; d < len; d++) {
-				printf("%c", str[d]);
 			}
+
 
 			currentSegment += 1;
 		}
 		// last segment
 		else{
-			int ind;
-			for (ind = 0; ind< n; ind++){
-				printf("%c", str[ind]);
-			}
-			printf("\n");
-			free (str);
+			// int ind;
+			// for (ind = 0; ind< n; ind++){
+			// 	printf("%c", str[ind]);
+			// }
+			// printf("\n");
+			// free (str);
 		}
 
-		printf("segment: %s\n", str);
+		printf("segment: %s\n", r_string);
+		printf("");
 		// returns the location of the first item in regards to where the string is "," the segment
-  return &str;
+  return r_string;
 }

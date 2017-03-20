@@ -193,9 +193,11 @@ int run() {
 		// success == 0, c was added
 		// success == 1, c was NOT added
 		// success == -1, S is complete
+
 		#pragma omp critical
 			success_ret = rpcappend_1(&ptr_c, clnt_app);
 		success = *success_ret;
+
 
 		printf("thread %d received success %d\n", rank, success );
 	}
@@ -207,12 +209,17 @@ int run() {
 	int seg_index = -1;
 	int valid_segment = 0;
 
+	printf("%s\n", "client break");
 
 	while ( strcmp(segment,SEGMENT_FINISH) != 0 ) {
-		printf("%s\n", "inside loop");
+
 		//rpcgetseg retuns "i,<seg>" where i is the index of seg
 		sscanf((char*)rpcgetseg_1(&segment_length,clnt_ver),"%d,%s",&seg_index, &segment);
+
+
+
 		printf("thread %d got segment %s with index %d\n",rank, segment, seg_index);
+
 
 		//verify the segment is valid
 		valid_segment += check_property(segment);

@@ -78,6 +78,7 @@ int main(int argc, char ** argv) {
 	#pragma omp parallel num_threads(thread_count) reduction(+ : tot_num_passed_segments)
     {
     	run();
+    	check_segment();
     }
 
 	write_output();
@@ -200,9 +201,13 @@ int run() {
 		printf("thread %d received success %d\n", rank, success );
 	}
 
-	
-	/** String in append server is complete, begin to check segments **/
+	return 0;
+}
 
+/** String in append server is complete, begin to check segments **/
+int check_segment() {
+
+	int rank = omp_get_thread_num();
 	char* segment = "";
 	int seg_index = -1;
 	int valid_segment = 0;

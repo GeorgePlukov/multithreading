@@ -221,7 +221,8 @@ int check_segment() {
 	while ( strcmp(segment,SEGMENT_FINISH) != 0 ) {
 
 		//rpcgetseg retuns "i,<seg>" where i is the index of seg
-		sscanf((char*)rpcgetseg_1(&segment_length,clnt_ver),"%d,%s",&seg_index, &segment);
+		printf("%s \n", &rpcgetseg_1(&segment_length,clnt_ver));
+		// sscanf(rpcgetseg_1(&segment_length,clnt_ver),"%d,%s",&seg_index, &segment);
 
 
 

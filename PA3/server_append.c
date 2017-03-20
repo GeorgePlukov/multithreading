@@ -153,6 +153,7 @@ int * rpcappend_1_svc(args, req)
     if (current_str_pos >= seg_length*num_seg) {
     	status = -1;
 					submit = 0;
+
     }
 
 	// if string is done then setup server and send message

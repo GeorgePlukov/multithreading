@@ -7,7 +7,7 @@
 
 
 #define BUFLEN 512  //Max length of buffer
-#define PORT 8885  //The port on which to listen for incoming data
+#define PORT 8884  //The port on which to listen for incoming data
 
 int count = 0;
 char *str;

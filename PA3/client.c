@@ -8,7 +8,7 @@
 
 
 #define BUFLEN 512  //Max length of buffer
-#define PORT 8885
+#define PORT 8884
 #define SERVER "130.113.68.130"
 /* function declarations */
 void validate_arguments();
@@ -215,7 +215,7 @@ int run() {
 	// while ( strcmp(segment,SEGMENT_FINISH) != 0 ) {
 
 		//rpcgetseg retuns "i,<seg>" where i is the index of seg
-		sscanf((char*)rpcgetseg_1(&rank,clnt_ver),"%d,%s",&seg_index, &segment);
+		sscanf((char*)rpcgetseg_1(&segment_length,clnt_ver),"%d,%s",&seg_index, &segment);
 		printf("thread %d got segment %s with index %d\n",rank, *segment, seg_index);
 
 		//verify the segment is valid

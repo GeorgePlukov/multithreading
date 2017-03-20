@@ -201,11 +201,13 @@ int run() {
 		printf("thread %d received success %d\n", rank, success );
 	}
 
+
 	return 0;
 }
 
 /** String in append server is complete, begin to check segments **/
 int check_segment() {
+
 
 	int rank = omp_get_thread_num();
 	char* segment = "";
@@ -214,7 +216,7 @@ int check_segment() {
 
 
 	while ( strcmp(segment,SEGMENT_FINISH) != 0 ) {
-
+		printf("%s\n", "inside loop");
 		//rpcgetseg retuns "i,<seg>" where i is the index of seg
 		sscanf((char*)rpcgetseg_1(&segment_length,clnt_ver),"%d,%s",&seg_index, &segment);
 		printf("thread %d got segment %s with index %d\n",rank, segment, seg_index);

@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <math.h>
 
 #define BUFLEN 512 //Max length of buffer
 #define PORT 8884 //The port on which to listen for incoming data

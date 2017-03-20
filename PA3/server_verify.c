@@ -70,16 +70,15 @@ void * listen_socket (void* r){
         }
 
 								// print the data that came in
-        printf("Data: %s\n" , buf);
+        printf("\nData: %s\n" , buf);
 
 								// allocate new memory for array
 								size_t len = strlen(buf);
 								printf("%d\n", len);
 
-								str = calloc(len+1,  sizeof(char));
+								str = calloc(len+1, sizeof(char));
 
-								int d = 0;
-								printf("%s\n" );
+								int d;
 								for (d = 0; d < len; d++) {
 									str[d] = buf[d];
 								}
@@ -88,9 +87,9 @@ void * listen_socket (void* r){
 								for (d = 0; d < len; d++) {
 									printf("%c", str[d]);
 								}
-								printf("\n");
-
-
+								// printf("\n");
+								//
+								// printf("test\n");
     close(s);
 				return;
 }
@@ -104,39 +103,41 @@ struct svc_req * req;
 		int len = strlen(str);
 
 
-		// printf("%d ... %d\n",*args, len-1);
-		//
-		// int length = 1;
-		// while ( currentSegment /= 10 )
-  //  length++;
+		printf("%d ... %d\n",*args, len-1);
 
-		// float test = (float) len / (float) *n;
-		// printf("1 %f\n", test);
-		// int test2 = floor(test);
-		// printf("2 %f\n", test);
-		//
-		// char* r_string = calloc(test + length, sizeof(char));
-		//
-		// // if there is still segments to give
-		// if (currentSegment < len / n -1){
-		// 	sprintf(str,"%ld", currentSegment);
-		// 	for (d = 0; d < len; d++) {
-		// 		printf("%c", str[d]);
-		// 	}
-		//
-		// 	segment_counter += L;
-		// }
-		// // last segment
-		// else{
-		// 	int ind;
-		// 	for (ind = 0; ind< n; ind++){
-		// 		printf("%c", str[ind]);
-		// 	}
-		// 	printf("\n");
-		// 	free (str);
-		// }
+		int length = 1;
+		while ( currentSegment /= 10 )
+   length++;
+		printf("length of ind: %d\n", length);
+		float total_segment = (float) len / (float) *n;
+		printf("1 %f\n", total_segment);
+		int rounded_total = floor(total_segment);
+		printf("2 %f\n", rounded_total);
 
+		char* r_string = calloc(rounded_total + length, sizeof(char));
 
+		// if there is still segments to give
+		if (currentSegment < rounded_total){
+			sprintf(str,"%ld", currentSegment);
+
+			int d;
+			for (d = 0; d < len; d++) {
+				printf("%c", str[d]);
+			}
+
+			currentSegment += 1;
+		}
+		// last segment
+		else{
+			int ind;
+			for (ind = 0; ind< n; ind++){
+				printf("%c", str[ind]);
+			}
+			printf("\n");
+			free (str);
+		}
+
+		printf("segment: %s\n", str);
 		// returns the location of the first item in regards to where the string is "," the segment
   return &str;
 }

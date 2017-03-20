@@ -12,7 +12,7 @@
 int count = 0;
 char *str;
 char* hn = "130.113.68.130";
-int submit = 0;
+int submit = 1;
 
 int property_index, thread_count, seg_length, num_seg;
 char c0, c1, c2;
@@ -30,7 +30,7 @@ int * rpcinitappendserver_1_svc(args, req)
 
 	//split up the args to get the values
 	//"property_index,thread_count,seg_length,num_seg,c0,c1,c2,host_name2"
-	
+
 	printf("%s\n",*args );
 
 	// NOT WORKING! :(
@@ -114,10 +114,10 @@ int * rpcappend_1_svc(args, req)
  	char c = malloc(sizeof(char));
  	sscanf(*args, "%c", &c);
 
- 
+
  	if (current_str_pos >= num_seg*seg_length) {
  		status = -1;
- 		return (&status);
+			submit = 0;
  	}
  	else {
  		str[current_str_pos] = c;
@@ -137,14 +137,14 @@ int * rpcappend_1_svc(args, req)
   //   if (can_add == 1) {
   //   	str[current_str_pos] = c;
   //   	if (c == c0) {
-  //   		++nc0; 
+  //   		++nc0;
   //   	}
   //   	if (c == c1) {
   //   		++nc1;
   //   	}
   //   	if (c == c2) {
   //   		++nc2;
-  //   	} 
+  //   	}
   //   	++current_str_pos;
   //   	status = 0;
   //   }
@@ -152,6 +152,7 @@ int * rpcappend_1_svc(args, req)
     printf("char %c  on seg %d added to string %s %d\n",c, curr_seg, str, current_str_pos);
     if (current_str_pos >= seg_length*num_seg) {
     	status = -1;
+					submit = 0;
     }
 
 	// if string is done then setup server and send message
@@ -183,7 +184,7 @@ int enforce(int index, int seg, char c) {
 	if (property_index == 2) {
 	    return propertyTwo(emptySpots, thread_count, seg_length, nc0,  nc1,  nc2, c,  c0,  c1,  c2);
 	}
-	
+
 	//enforce property F3 by using F0
 	if (property_index == 3) {
 	    return propertyZero(emptySpots,  nc2,  nc1,  nc0, c,  c2,  c1,  c0);

@@ -215,13 +215,21 @@ int check_segment() {
 	char* segment = "";
 	int seg_index = -1;
 	int valid_segment = 0;
-
-	printf("%s\n", "client break");
-
+	struct timespec sleepTime;
+	sleepTime.tv_sec = 0;
 	while ( strcmp(segment,SEGMENT_FINISH) != 0 ) {
 
+		printf("h\n");
+		char ** a;
 		//rpcgetseg retuns "i,<seg>" where i is the index of seg
-		sscanf((char*)rpcgetseg_1(&segment_length,clnt_ver),"%d,%s",&seg_index, &segment);
+		// a = rpcgetseg_1(&segment_length,clnt_ver);
+
+		#pragma omp critical
+		sscanf(rpcgetseg_1(&segment_length,clnt_ver),"%d,%s",&seg_index, &segment);
+		printf("%s\n",&segment);
+		sleepTime.tv_nsec = MIN_SLEEP_TIME + rand() % MAX_SLEEP_TIME *2;
+		nanosleep(&sleepTime, NULL);
+
 
 
 

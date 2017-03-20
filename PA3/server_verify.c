@@ -99,23 +99,31 @@ char ** rpcgetseg_1_svc(args, req)
 int * args;
 struct svc_req * req;
 {
+		printf("thread_coun\n");
 		// n is the number of characters in a segment
 		int * n = args;
 		int len = strlen(str);
-
 		int length = 1;
-		while ( currentSegment /= 10 )
-   length++;
+
 		float total_segment = (float) len / (float) *n;
 		int rounded_total = floor(total_segment);
 
+		if (currentSegment < 10){
+				length = 1;
+		} else if (currentSegment < 100){
+		length = 2;
+		}else {
+			length = 3;
+		}
 
 		char* r_string = calloc(rounded_total + length+1, sizeof(char));
 
 		printf("%d %d\n", currentSegment, rounded_total);
 		// if there is still segments to give
 		if (currentSegment < total_segment){
+
 			sprintf(r_string,"%d,", currentSegment);
+
 			int j, i;
 			for (j = currentSegment * rounded_total, i = length +1; j< rounded_total; j++, i++){
 				printf("str[%d]: %c\n", j,str[j]);
@@ -124,21 +132,15 @@ struct svc_req * req;
 
 			}
 
-
-			currentSegment += 1;
+			currentSegment = currentSegment + 1;
 		}
 		// last segment
 		else{
-			// int ind;
-			// for (ind = 0; ind< n; ind++){
-			// 	printf("%c", str[ind]);
-			// }
-			// printf("\n");
-			// free (str);
+			r_string = "-";
 		}
 
 		printf("segment: %s\n", r_string);
-		printf("");
+
 		// returns the location of the first item in regards to where the string is "," the segment
-  return r_string;
+  return &r_string;
 }

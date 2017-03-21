@@ -1,5 +1,21 @@
+/*
+This was a collaboration between:
+	George Plukov (plukovga, 1316246)
+	Jean Lucas Ferreira (ferrejll, 1152120)
+
+	- The current code creates two remote servers (append_server, and verify_server)
+	- append_server is connected to verify_server via UDP socket
+	- All required features have been implemented
+	- Segments are NOT enforced during appending
+
+*/
+
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <omp.h>
 #include <math.h>
 #include <string.h>
@@ -45,7 +61,7 @@ int main(int argc, char ** argv) {
 	//start the program
 	#pragma omp parallel num_threads(thread_count) reduction(+ : tot_num_passed_segments)
     {
-    	run();
+    	construct_string();
     	check_segment();
     }
 
@@ -144,7 +160,9 @@ int init() {
 	return 1;
 }
 
-int run() {
+
+//client builds the string by trying to append via APPEND server
+int construct_string() {
 
 	int rank = omp_get_thread_num();
 	char c = 'a' +  rank;
@@ -179,7 +197,6 @@ int run() {
 /** String in append server is complete, begin to check segments **/
 int check_segment() {
 
-	int rank = omp_get_thread_num();
 	char* segment = malloc(sizeof(char)*(segment_length+1));
 	int seg_index;
 	int valid_segment = 0;

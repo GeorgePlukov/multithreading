@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <ctype.h>
+#include <unistd.h>
 #include <omp.h>
 #include "append.h"
 
@@ -73,9 +74,8 @@ void die(char *s)
 // set up the server
 int init_server_and_send_string(char * str){
     struct sockaddr_in si_other;
-    int s, i, slen=sizeof(si_other);
+    int s, slen=sizeof(si_other);
     char buf[BUFLEN];
-    char message[BUFLEN];
 
     if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
         die("socket");
@@ -133,37 +133,37 @@ struct svc_req *req;
         submit = 0;
     }
     else {
-    //     str[current_str_pos] = c;
-    //     current_str_pos++;
-    //     status = 0;
-    // }
-
-
- 	if (current_str_pos % seg_length == 0) {
-    	curr_seg++;
-    	nc0 = 0;
-        nc1 = 0;
-        nc2 = 0;
+        str[current_str_pos] = c;
+        current_str_pos++;
+        status = 0;
     }
 
-    //check enforcement
-    int can_add = enforce(current_str_pos % seg_length, curr_seg,c);
 
-    if (can_add == 1) {
-    	str[current_str_pos] = c;
-    	if (c == c0) {
-    		++nc0;
-    	}
-    	if (c == c1) {
-    		++nc1;
-    	}
-    	if (c == c2) {
-    		++nc2;
-    	}
-    	++current_str_pos;
-    	status = 0;
-    }
-}
+//  	if (current_str_pos % seg_length == 0) {
+//     	curr_seg++;
+//     	nc0 = 0;
+//         nc1 = 0;
+//         nc2 = 0;
+//     }
+
+//     //check enforcement
+//     int can_add = enforce(current_str_pos % seg_length, curr_seg,c);
+
+//     if (can_add == 1) {
+//     	str[current_str_pos] = c;
+//     	if (c == c0) {
+//     		++nc0;
+//     	}
+//     	if (c == c1) {
+//     		++nc1;
+//     	}
+//     	if (c == c2) {
+//     		++nc2;
+//     	}
+//     	++current_str_pos;
+//     	status = 0;
+//     }
+// }
     // printf("char %c  on seg %d added to string %s %d\n",c, curr_seg, str, current_str_pos);
     if (current_str_pos >= seg_length*num_seg) {
         status = -1;

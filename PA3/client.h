@@ -4,7 +4,10 @@
 /* function declarations */
 void validate_arguments();
 int init();
-int run();
+int construct_string();
+int check_segment();
+int check_property(char* seg);
+void write_output();
 void teardown();
 
 

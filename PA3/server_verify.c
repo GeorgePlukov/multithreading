@@ -34,7 +34,7 @@ struct svc_req * req;
 void * listen_socket (void* r){
 	struct sockaddr_in si_me, si_other;
 
-    int s, i, slen = sizeof(si_other) , recv_len;
+    int s, slen = sizeof(si_other) , recv_len;
     char buf[BUFLEN];
 
     //create a UDP socket

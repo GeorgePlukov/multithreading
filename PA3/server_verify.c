@@ -18,17 +18,17 @@ int currentSegment= 0;
 int * rpcinitverifyserver_1_svc(req)
 struct svc_req * req;
 {
-  static int status;
-  printf("[STATUS] Init server called\n");
+  	static int status;
+  	printf("[STATUS] Init server called\n");
 
-  //setup socket
-		pthread_t thread;
-		pthread_create(&thread, NULL,listen_socket, NULL);
-  //keep listening for data
+	//setup socket
+	pthread_t thread;
+	pthread_create(&thread, NULL,listen_socket, NULL);
+  	//keep listening for data
 
 
-  status = 1;
-  return (&status);
+	status = 1;
+	return (&status);
 }
 
 void * listen_socket (void* r){
@@ -92,37 +92,38 @@ struct svc_req * req;
 {
 	int seg_len = args;
 
-	// char* text = malloc(sizeof(char)*(seg_len+1) + sizeof(int)*5);
 
 	static my_struct response;                                                 
 	static char text[255]; 
 	memset(&response, '\0', sizeof(my_struct));                                
 	memset(text, '\0', sizeof(text));  
 
-	if (current_index < strlen(str)/seg_len) {
+	int max_seg = strlen(str)/seg_len;
+	if (current_index < max_seg) {
 
 		char* seg = malloc(sizeof(char)*(seg_len+1));
 
+		//where in the string 'str' should we starty copying
 		int starting_position = current_index*seg_len;
 		
 		int i;
 		for (i = 0; i < seg_len; i++) {
-			printf("appending %c\n", str[starting_position]);
 			seg[i] = str[starting_position++];
 		}
 		seg[i] = '\0';
-		printf("seg = %s\n",seg);
 
+		//setup the response text <segIndex,segStr>
 		sprintf(text,"%d,%s", current_index, seg);
 		current_index+=1;
 		free(seg);
 	}
 
 	else {
+		//if no more segments to send, reply with <segIndex,'-'>
 		sprintf(text,"%d,%s%c",current_index,"-",'\0');
 	}
 
-	printf("Sending over: %s.\n",text);
+	// printf("Sending over: %s.\n",text);
 	response.data = text; 
 
 	return (&response);

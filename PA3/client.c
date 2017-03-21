@@ -182,6 +182,7 @@ int run() {
 	struct timespec sleepTime;
 	sleepTime.tv_sec = 0;
 
+
 	int *success_ret;
 	int success = 1;
 
@@ -199,7 +200,6 @@ int run() {
 			success_ret = rpcappend_1(&ptr_c, clnt_app);
 		success = *success_ret;
 
-
 		printf("thread %d received success %d\n", rank, success );
 	}
 
@@ -209,7 +209,6 @@ int run() {
 
 /** String in append server is complete, begin to check segments **/
 int check_segment() {
-
 
 	int rank = omp_get_thread_num();
 	char* segment = malloc(sizeof(char)*(segment_length+1));
@@ -309,10 +308,13 @@ int check_property(char* seg) {
 
 
 
+
 void write_output() {
 	printf("String S has been built\n");
-	printf("S = %s, # of passed segments passed %d\n", S, tot_num_passed_segments);
+	printf("S = %s.\n# of passed segments passed %d\n", S, tot_num_passed_segments);
 	printf("write result to file.\n");
+
+	//write to out.txt
 }
 
 void teardown() {

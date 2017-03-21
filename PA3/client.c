@@ -6,7 +6,8 @@ This was a collaboration between:
 	- The current code creates two remote servers (append_server, and verify_server)
 	- append_server is connected to verify_server via UDP socket
 	- All required features have been implemented
-	- Segments are NOT enforced during appending
+	
+	- Enforces properties F0, F2 and F3, sometimes enforces F1
 
 */
 
@@ -46,7 +47,7 @@ int main(int argc, char ** argv) {
 	max_str_size = num_segments*segment_length;
 	all_args = malloc(sizeof(int)*4 + sizeof(char)*3 + sizeof(char*));
 	sprintf(all_args, "%d,%d,%d,%d,%c,%c,%c,%s", \
-					property_index,thread_count,num_segments,segment_length,c0,c1,c2,host_name2);
+					property_index,thread_count,segment_length,num_segments,c0,c1,c2,host_name2);
 
 
 

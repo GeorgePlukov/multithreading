@@ -8,7 +8,7 @@
 
 
 #define BUFLEN 512  //Max length of buffer
-#define PORT 8883  //The port on which to listen for incoming data
+#define PORT 8884  //The port on which to listen for incoming data
 
 char *str;
 char* host_name2;
@@ -122,13 +122,13 @@ struct svc_req *req;
 	static int status;
 	status = 1;
 
+
     // all string building
     char c = malloc(sizeof(char));
     sscanf(*args, "%c", &c);
 
-    int my_pos = current_str_pos;
 
-    if (my_pos >= num_seg*seg_length) {
+    if (current_str_pos >= num_seg*seg_length) {
         status = -1;
         submit = 0;
     }
@@ -139,7 +139,7 @@ struct svc_req *req;
     // }
 
 
- 	if (my_pos % seg_length == 0) {
+ 	if (current_str_pos % seg_length == 0) {
     	curr_seg++;
     	nc0 = 0;
         nc1 = 0;
@@ -147,11 +147,10 @@ struct svc_req *req;
     }
 
     //check enforcement
-    int can_add = enforce(my_pos % seg_length, curr_seg,c);
+    int can_add = enforce(current_str_pos % seg_length, curr_seg,c);
 
     if (can_add == 1) {
-        printf("Adding %c to '%s' on segment\nnc0 = %d\nnc1 = %d\nnc2 = %d\n\n",c, str,curr_seg, nc0,nc1,nc2);
-    	str[my_pos] = c;
+    	str[current_str_pos] = c;
     	if (c == c0) {
     		++nc0;
     	}
@@ -164,19 +163,17 @@ struct svc_req *req;
     	++current_str_pos;
     	status = 0;
     }
-
-    // printf("char %c  on seg %d added to string %s %d\n",c, curr_seg, str, current_str_pos);
-    if (++my_pos >= seg_length*num_seg) {
+}
+    if (current_str_pos >= seg_length*num_seg) {
         status = -1;
         submit = 0;
     }
-}
+
     // if string is done then setup server and send message
     if (submit == 0 && !str_sent){
         submit = 1;
         init_server_and_send_string(str);
     }
-
 
     return (&status);
 

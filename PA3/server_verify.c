@@ -13,20 +13,20 @@
 
 void * listen_socket (void*);
 char * str;
-int currentSegment= 0;
 
+int current_index = 0;
 int * rpcinitverifyserver_1_svc(req)
 struct svc_req * req;
 {
   	static int status;
-  	printf("[STATUS] Init server called\n");
+  	printf("\n\n[STATUS] Init verify server called\n\n");
 
 	//setup socket
 	pthread_t thread;
 	pthread_create(&thread, NULL,listen_socket, NULL);
   	//keep listening for data
 
-
+	current_index = 0;
 	status = 1;
 	return (&status);
 }
@@ -59,32 +59,30 @@ void * listen_socket (void* r){
 
     //keep listening for data
 
-        printf("Waiting for data...");
-        fflush(stdout);
+    printf("Waiting for data...\n");
+    fflush(stdout);
 
-								// Listen for data coming into the port
-        if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen)) == -1)
-        {
-			printf("[ERROR] Error receiving data from socket\n");
-			exit(1);
-        }
+	// Listen for data coming into the port
+    if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
+		printf("[ERROR] Error receiving data from socket\n");
+		exit(1);
+    }
 
-		// allocate new memory for array
-		str = calloc(recv_len+1, sizeof(char));
+	// allocate new memory for array
+	str = calloc(recv_len+1, sizeof(char));
 
-		int d;
-		for (d = 0; d < recv_len; d++) {
-			str[d] = buf[d];
-		}
-		str[d] = '\0';
-		printf("str = %s.\n", str);
+	int d;
+	for (d = 0; d < recv_len; d++) {
+		str[d] = buf[d];
+	}
+	str[d] = '\0';
+	printf("received string: %s.\n", str);
 
     close(s);
-				return;
+	return;
 }
 
 
-int current_index = 0;
 
 my_struct * rpcgetseg_1_svc(args, req)
 int  args;

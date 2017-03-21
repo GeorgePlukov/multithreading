@@ -5,46 +5,14 @@
 #include <string.h>
 #include "append.h"
 #include "verify.h"
+#include "client.h"
 
-
-#define BUFLEN 512  //Max length of buffer
-#define PORT 8884
-#define SERVER "130.113.68.130"
-/* function declarations */
-void validate_arguments();
-int init();
-int run();
-void write_output();
-void teardown();
-
-
-
-/* globals for the string values */
-int max_str_size;
-int str_position;
-char* S;
-char c0,c1,c2;
-
-/* gloabls for the segment values */
-const char* SEGMENT_FINISH = "-";
-int segment_length;
-int num_segments;
-
-int thread_count;
-int property_index;
-int tot_num_passed_segments;
-int MIN_SLEEP_TIME = 100000000;
-int MAX_SLEEP_TIME = 500000000;
-
-//temporary. this value would ideally be passed as arg
-char* server_moore = "130.113.68.130";
-char* server_mills = "130.113.68.9";
 
 //append and verify clients
 CLIENT *clnt_app, *clnt_ver;
 
 //will hold all argumests as CSV
-char* all_args;
+static char* all_args;
 
 
 
@@ -57,15 +25,15 @@ int main(int argc, char ** argv) {
 	c0 = argv[5][0];
 	c1 = argv[6][0];
 	c2 = argv[7][0];
-	char* host_name1 = argv[8];
-	char* host_name2 = argv[9];
+	host_name1 = argv[8];
+	host_name2 = argv[9];
 	max_str_size = num_segments*segment_length;
 	all_args = malloc(sizeof(int)*4 + sizeof(char)*3 + sizeof(char*));
 	sprintf(all_args, "%d,%d,%d,%d,%c,%c,%c,%s", \
 					property_index,thread_count,num_segments,segment_length,c0,c1,c2,host_name2);
 
 
-	//ideally we would want to validate the arguments here
+
 	validate_arguments();
 
 	//now we can initialize the program.
@@ -83,9 +51,7 @@ int main(int argc, char ** argv) {
 
 	write_output();
 
-
 	teardown();
-
 
 	return 1;
 }
@@ -120,11 +86,23 @@ void validate_arguments() {
         exit(0);
     }
 	if (!valid) {
-		printf("invalid arguments given\n");
+		printf("Invalid arguments given\n");
+		exit(0);
+	}
+
+	if ( strcmp(host_name1,SERVER_MOORE_IP) != 0 && strcmp(host_name1,SERVER_MILLS_IP) != 0 ) {
+		printf("Invalid host name 1 given. Expected one of:\n\tMoore: %s\n\tMills: %s\n",SERVER_MOORE_IP, SERVER_MILLS_IP );
+		exit(0);
+	}
+
+
+	if ( strcmp(host_name2,SERVER_MOORE_IP) != 0 && strcmp(host_name2,SERVER_MILLS_IP) != 0 ) {
+		printf("Invalid host name 2 given. Expected one of:\n\tMoore: %s\n\tMills: %s\n",SERVER_MOORE_IP, SERVER_MILLS_IP );
 		exit(0);
 	}
 
 }
+
 
 int init() {
 	//for generating random numbers
@@ -132,43 +110,36 @@ int init() {
 
     // S is the final generated string
     S = calloc(max_str_size + 1, sizeof(char));
-    printf("init finished 1\n");
 
 	int *result;
 
 	/****  setup RPC init append server ****/
-	clnt_app = clnt_create(server_moore,APPENDPROG,APPENDVERS,"tcp");
+	clnt_app = clnt_create(host_name1,APPENDPROG,APPENDVERS,"tcp");
 	if (clnt_app == (CLIENT *)NULL) {
-		clnt_pcreateerror(server_moore);
+		clnt_pcreateerror(host_name1);
 		return -1;
 	}
-	printf("init finished 2\n");
-
 
 	result = rpcinitappendserver_1(&all_args, clnt_app);
 	if (result == (int *) NULL) {
-		clnt_perror(clnt_app,server_moore);
+		clnt_perror(clnt_app,host_name1);
 		return -1;
 	}
-	printf("init finished 3\n");
+
 
 
 	/****  setup RPC init verify server ****/
-	clnt_ver = clnt_create(server_moore,VERIFYPROG,VERIFYVERS,"udp");
+	clnt_ver = clnt_create(host_name2,VERIFYPROG,VERIFYVERS,"tcp");
 	if (clnt_ver == (CLIENT *)NULL) {
-		clnt_pcreateerror(server_moore);
+		clnt_pcreateerror(host_name2);
 		return -1;
 	}
-	printf("init finished 4\n");
-
 
 	result = rpcinitverifyserver_1(clnt_ver);
 	if (result == (int *) NULL) {
-		clnt_perror(clnt_ver,server_moore);
+		clnt_perror(clnt_ver,host_name2);
 		return -1;
 	}
-
-	printf("init finished 5\n");
 
 	return 1;
 }
@@ -191,16 +162,14 @@ int run() {
 		sleepTime.tv_nsec = MIN_SLEEP_TIME + rand() % MAX_SLEEP_TIME;
 		nanosleep(&sleepTime, NULL);
 
-			//RPC to try an append string
-			// success == 0, c was added
-			// success == 1, c was NOT added
-			// success == -1, S is complete
+		//RPC to try an append string
+		// success == 0, c was added
+		// success == 1, c was NOT added
+		// success == -1, S is complete
 
-			#pragma omp critical
+		#pragma omp critical
 			success_ret = rpcappend_1(&ptr_c, clnt_app);
 		success = *success_ret;
-
-		printf("thread %d received success %d\n", rank, success );
 	}
 
 
@@ -222,23 +191,24 @@ int check_segment() {
 
 		#pragma omp critical
 			response = rpcgetseg_1(segment_length,clnt_ver);
-		// printf("rsp.data = %s\n", response->data);
+
 		char* q = malloc(strlen(response->data));
 		q = response->data;
 		sscanf(q, "%d,%s", &seg_index, segment);
 
-
+		//we are done receiving segments
 		if (strcmp(segment,SEGMENT_FINISH) == 0) {
-			printf("done checking segments\n");
 			break;
 		}
 
 
-		
-
-
 		//verify the segment is valid
-		valid_segment += check_property(segment);
+		valid_segment = check_property(segment);
+		// printf("segment %s is valid = %d. %d\n", segment, valid_segment,tot_num_passed_segments);
+		
+		//this is a sum reduction each thread partakes
+		tot_num_passed_segments += valid_segment;
+
 
 		//concat the string
 		int starting_pos = seg_index*segment_length;
@@ -255,13 +225,7 @@ int check_segment() {
 
 
 
-
-
-
-
-
-
-//given a segment index, 0..M-1, check if it satisfies the property
+//given a segment of the string, check if it satisfies the property
 int check_property(char* seg) {
 
     size_t i;
@@ -287,7 +251,6 @@ int check_property(char* seg) {
     }
 
     //check the necessary property condition
-
     if (property_index == 0 && (num_c0 + num_c1) == num_c2 ) {
     	return 1;
     }
@@ -308,13 +271,14 @@ int check_property(char* seg) {
 
 
 
-
 void write_output() {
-	printf("String S has been built\n");
-	printf("S = %s.\n# of passed segments passed %d\n", S, tot_num_passed_segments);
-	printf("write result to file.\n");
+	printf("%s\n%d\n", S, tot_num_passed_segments);
 
 	//write to out.txt
+	FILE *f = fopen(OUTPUT_FILE, "w");
+	fprintf(f, "%s\n", S);
+	fprintf(f, "%d\n",tot_num_passed_segments );
+	fclose(f);
 }
 
 void teardown() {

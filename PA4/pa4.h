@@ -2,6 +2,12 @@
 #define PA4_H
 
 
-const int a = 1337;
+
+int init();
+int run();
+void write_output();
+void cleanup();
+
+
 
 #endif

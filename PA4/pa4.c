@@ -51,8 +51,55 @@ int init() {
 	return 0;
 }
 
+int monus (int x, int y){
+	if (x - y < 0){
+		return 0;
+	}
+	return x;
+}
 
+int maxus (int x, int y, int max){
+	if (x + y > max){
+		return max;
+	}
+	return x + y;
+}
+
+typedef struct pixel {
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
+};
 int run() {
+	printf("%i\n", img_in->width);
+	printf("%i\n", img_in->height);
+
+	for (int i = 0; i < img_in->width; i++){
+
+		for (int j = 0; j < img_in->height; j++){
+
+			// unsigned char r = ImageGetPixel(img_in, i, j, 0);
+			// unsigned char g = ImageGetPixel(img_in, i, j, 1);
+			// unsigned char b = ImageGetPixel(img_in, i, j, 2);
+			// minx, maxX, miny, maxY
+			int minX = monus(i,blur_radius);
+			int maxX = maxus(i,blur_radius,img_in->width);
+			int minY = monus(j,blur_radius);
+			int maxY = maxus(j,blur_radius,img_in->height);
+
+
+			printf("minx: %i maxx: %i miny: %i maxy: %i\n", minX, maxX,minY,maxY);
+
+			averagePixels(minX,maxX,minY,maxY)
+
+
+			ImageSetPixel(img_out, i, j, 0, r+1);
+			ImageSetPixel(img_out, i, j, 1, g+1);
+			ImageSetPixel(img_out, i, j, 2, b+1);
+
+			// printf("rgb(%u,%u,%u)\n", r,g,b);
+		}
+	}
 	return 1;
 }
 

@@ -2,9 +2,6 @@
 #define PA4_H
 
 
-
-int init();
-int run();
 void write_output();
 void cleanup();
 

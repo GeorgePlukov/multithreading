@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 	run();
 
 	// write_output();
-	// cleanup();
+	cleanup();
 
 	return 1;
 }
@@ -55,10 +55,7 @@ int init() {
 	img_in  = ImageRead(input_ppm);
 	img_w = ImageWidth(img_in);
 	img_h = ImageHeight(img_in);
-
 	img_out = ImageCreate(img_w, img_h);
-
-
 
 	return 0;
 }
@@ -76,7 +73,6 @@ int maxus (int x, int y, int max){
 	}
 	return x + y;
 }
-
 
 
 int run() {

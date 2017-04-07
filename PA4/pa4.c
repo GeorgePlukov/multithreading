@@ -95,7 +95,7 @@ int run() {
     MPI_Get_processor_name(processor_name, &name_len);
 
     // Print off a hello world message
-    printf("Hello world from processor %s, rank %d out of %d processors\n",processor_name, world_rank, world_size);
+    // printf("Hello world from processor %s, rank %d out of %d processors\n",processor_name, world_rank, world_size);
 
 
     //try to allocate num of rows with respect to world_size
@@ -103,13 +103,55 @@ int run() {
 
     int my_starting_row = world_rank*row_blocks;	
 
+    int i;
+
+    int *sendcounts;    // array describing how many elements to send to each process
+    int *displs;        // array describing the displacements where each segment begins
+
+    int rem = (img_w*img_h)%world_size; // elements remaining after division among processes
+    int sum = 0;                // Sum of counts. Used to calculate displacements
+    char rec_buf[100];          // buffer where the received data should be stored
+
+
+
+    sendcounts = malloc(sizeof(int)*world_size);
+    displs = malloc(sizeof(int)*world_size);
+
+    // calculate send counts and displacements
+    for (i = 0; i < world_size; i++) {
+        sendcounts[i] = (img_w*img_h)/world_size;
+        if (rem > 0) {
+            sendcounts[i]++;
+            rem--;
+        }
+
+        displs[i] = sum;
+        sum += sendcounts[i];
+    }
+
+    // print calculated send counts and displacements for each process
+    if (world_rank == 0) {
+        for ( i = 0; i < world_size; i++) {
+            printf("sendcounts[%d] = %d\tdispls[%d] = %d\n", i, sendcounts[i], i, displs[i]);
+        }
+    }
+
+    MPI_Scatterv(&img_in, sendcounts, displs, MPI_CHAR, &rec_buf, 100, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+
+    // print what each process received
+    printf("%d: ", world_rank);
+    for (i = 0; i < sendcounts[world_rank]; i++) {
+        printf("%c\t", rec_buf[i]);
+    }
+    printf("\n");
 
     //do the calculations here
-    int i,j;
+    int x,j;
 
-	for ( i = my_starting_row; i < (world_rank+1)*row_blocks; i++){
-		for ( j = 0; j < img_h; j++){
-			averagePixels(i,j);
+	for ( x = my_starting_row; x < (world_rank+1)*row_blocks; x++){
+		for ( j = 0; j < img_w; j++){
+			averagePixels(x,j);
 		}
 	}
 
@@ -118,7 +160,7 @@ int run() {
     	printf("all other send result to 0\n");
     }	
     else {
-    	printf("rank 0 receive result\n");
+    	
     }							
 
 

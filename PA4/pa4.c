@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ppm.h"
-#include "pa4.h"
+// #include "pa4.h"
 
 
 int blur_radius = 0;
@@ -32,8 +32,8 @@ int main(int argc, char** argv) {
 
 	init();
 	run();
-	write_output();
-	cleanup();
+	// write_output();
+	// cleanup();
 
 	return 1;
 }
@@ -65,11 +65,17 @@ int maxus (int x, int y, int max){
 	return x + y;
 }
 
-typedef struct pixel {
+typedef struct Pixel {
     unsigned char red;
     unsigned char green;
     unsigned char blue;
 };
+
+struct Pixel averagePixels(int minX,int maxX,int minY,int maxY){
+	struct Pixel p = {'100','150','100'};
+	return p;
+}
+
 int run() {
 	printf("%i\n", img_in->width);
 	printf("%i\n", img_in->height);
@@ -90,12 +96,11 @@ int run() {
 
 			printf("minx: %i maxx: %i miny: %i maxy: %i\n", minX, maxX,minY,maxY);
 
-			averagePixels(minX,maxX,minY,maxY)
+			struct Pixel p = averagePixels(minX,maxX,minY,maxY);
 
-
-			ImageSetPixel(img_out, i, j, 0, r+1);
-			ImageSetPixel(img_out, i, j, 1, g+1);
-			ImageSetPixel(img_out, i, j, 2, b+1);
+			ImageSetPixel(img_out, i, j, 0, p.red);
+			ImageSetPixel(img_out, i, j, 1, p.green);
+			ImageSetPixel(img_out, i, j, 2, p.blue);
 
 			// printf("rgb(%u,%u,%u)\n", r,g,b);
 		}
@@ -104,17 +109,16 @@ int run() {
 }
 
 
-
-void write_output() {
-
-	//now that we built img_out, save it to the desired file
-	ImageWrite(img_out, output_ppm);
-}
-
-
-
-
-void cleanup() {
-	free(img_in);
-	free(img_out);
-}
+// void write_output() {
+//
+// 	//now that we built img_out, save it to the desired file
+// 	ImageWrite(img_out, output_ppm);
+// }
+//
+//
+//
+//
+// void cleanup() {
+// 	free(img_in);
+// 	free(img_out);
+// }

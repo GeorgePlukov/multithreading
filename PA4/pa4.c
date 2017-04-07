@@ -102,7 +102,7 @@ int run() {
     //try to allocate num of rows with respect to world_size
     int row_blocks = ceil(img_h/world_size);
 
-    int my_starting_row = world_rank*row_blocks;	
+    int my_starting_row = world_rank*row_blocks;
 
     Pixel pixel;
     /* Define a Pixel type for MPI */
@@ -146,7 +146,12 @@ int run() {
 
     unsigned char* send_buf = ImagePixelArray(img_in);
     unsigned char* recv_buf = ImagePixelArray(img_in);
-
+		int d,f;
+		for (d = 0; d < count; d++) {
+			for (f = 0; f < count; f++){
+				Pixel p = {Pixel(ImageGetPixelI(img_in, d,f,0)),Pixel(ImageGetPixelI(img_in, d,f,1)) ,Pixel(ImageGetPixelI(img_in, d,f,2))}
+			}
+		}
     MPI_Scatterv(send_buf, sendcounts, displs, mpi_pixel_type, recv_buf, 10000, mpi_pixel_type, (int)0, MPI_COMM_WORLD);
 
 
@@ -168,15 +173,15 @@ int run() {
 
     if (world_rank != 0) {
     	printf("all other send result to 0\n");
-    }	
+    }
     else {
-    	
-    }							
+
+    }
 
 
     if (world_rank == 0) {
     	printf("rank 0 write result to output ppm\n");
-    }								
+    }
 
 
 
@@ -191,7 +196,7 @@ int run() {
 	// printf("%i\n", img_in->width);
 	// printf("%i\n", img_in->height);
 
-	
+
 	// return 1;
 }
 

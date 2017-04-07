@@ -12,6 +12,7 @@ typedef struct Pixel {
 
 
 void cleanup();
+void writeoutput();
 int run();
 void averagePixels(int x, int y);
 

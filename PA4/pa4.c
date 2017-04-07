@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 	init();
 	run();
 
-	// write_output();
+	writeoutput();
 	cleanup();
 
 	return 1;
@@ -175,7 +175,7 @@ void averagePixels(int x, int y) {
 	ImageSetPixel(img_out, x, y, 2, blue);
 }
 
-void write_output() {
+void writeoutput() {
 
 	//now that we built img_out, save it to the desired file
 	ImageWrite(img_out, output_ppm);

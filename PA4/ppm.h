@@ -32,4 +32,6 @@ void   ImageClear(Image *image, unsigned char red, unsigned char green, unsigned
 void   ImageSetPixel(Image *image, int x, int y, int chan, unsigned char val);
 unsigned char ImageGetPixel(Image *image, int x, int y, int chan);
 
+unsigned char* ImagePixelArray();
+
 #endif /* PPM_H */

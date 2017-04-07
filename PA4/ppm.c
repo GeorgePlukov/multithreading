@@ -31,7 +31,7 @@ die(char *message)
 static void
 checkDimension(int dim)
 {
-  if (dim < 1 || dim > 4000) 
+  if (dim < 1 || dim > 4000)
     die("file contained unreasonable width or height");
 }
 
@@ -44,7 +44,7 @@ readPPMHeader(FILE *fp, int *width, int *height)
   char ch;
   int  maxval;
 
-  if (fscanf(fp, "P%c\n", &ch) != 1 || ch != '6') 
+  if (fscanf(fp, "P%c\n", &ch) != 1 || ch != '6')
     die("file is not in ppm raw format; cannot read");
 
   /* skip comments */
@@ -65,7 +65,7 @@ readPPMHeader(FILE *fp, int *width, int *height)
   fscanf(fp, "%d%d%d\n", width, height, &maxval);
 
   if (maxval != 255) die("image is not true-color (24 bit); read failed");
-  
+
   checkDimension(*width);
   checkDimension(*height);
 }
@@ -87,7 +87,7 @@ ImageCreate(int width, int height)
 
   return image;
 }
-  
+
 
 Image *
 ImageRead(char *filename)
@@ -135,7 +135,7 @@ void ImageWrite(Image *image, char *filename)
   if (num != size) die("cannot write image data to file");
 
   fclose(fp);
-}  
+}
 
 
 int
@@ -152,7 +152,7 @@ ImageHeight(Image *image)
 }
 
 
-void   
+void
 ImageClear(Image *image, unsigned char red, unsigned char green, unsigned char blue)
 {
   int i;
@@ -183,4 +183,10 @@ ImageGetPixel(Image *image, int x, int y, int chan)
   int offset = (y * image->width + x) * 3 + chan;
 
   return image->data[offset];
+}
+
+unsigned char*
+ImagePixelArray(){
+
+  return image->data; 
 }

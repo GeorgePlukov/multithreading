@@ -141,15 +141,16 @@ int run() {
 
 
 
-
-
-
-    unsigned char* send_buf = ImagePixelArray(img_in);
+    // unsigned char* send_buf = ImagePixelArray(img_in);
     unsigned char* recv_buf = ImagePixelArray(img_in);
+		Pixel send_buf [img_w*img_h];
 		int d,f;
-		for (d = 0; d < count; d++) {
-			for (f = 0; f < count; f++){
-				Pixel p = {Pixel(ImageGetPixelI(img_in, d,f,0)),Pixel(ImageGetPixelI(img_in, d,f,1)) ,Pixel(ImageGetPixelI(img_in, d,f,2))}
+		int count = 0;
+		for (d = 0; d < img_h; d++) {
+			for (f = 0; f < img_w; f++){
+				Pixel p = {Pixel(ImageGetPixel(img_in, d,f,0)),Pixel(ImageGetPixel(img_in, d,f,1)) ,Pixel(ImageGetPixel(img_in, d,f,2))}
+				send_buf[count] = p;
+				count++;
 			}
 		}
     MPI_Scatterv(send_buf, sendcounts, displs, mpi_pixel_type, recv_buf, 10000, mpi_pixel_type, (int)0, MPI_COMM_WORLD);

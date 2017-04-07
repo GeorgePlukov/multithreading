@@ -6,21 +6,25 @@
 #include "pa4.h"
 
 
-int blur_radius = 0;
+int blur_radius;
+int img_w;
+int img_h;
+
 char* input_ppm;
 char* output_ppm;
 
 struct Image* img_in;
 struct Image* img_out;
-void colorize_row(int row, unsigned char col, int width, int height, Image *img);
 
 
 int main(int argc, char** argv) {
+
 
 	if (argc < 3) {
 		printf("Not enough arguments\n");
 		return 0;
 	}
+
 
 	blur_radius = atoi(argv[1]);
 	input_ppm  = argv[2];
@@ -31,22 +35,54 @@ int main(int argc, char** argv) {
 		printf("blur radius too small\n");
 		return 0;
 	}
-	
-	//Create the two necessary Image objects
-	int img_w, img_h;
-	img_in  = ImageRead(input_ppm);
 
+	init();
+	run();
+
+	// write_output();
+	// cleanup();
+
+	return 1;
+}
+
+
+
+
+
+int init() {
+
+	//Create the two necessary Image objects
+	img_in  = ImageRead(input_ppm);
 	img_w = ImageWidth(img_in);
 	img_h = ImageHeight(img_in);
 
-	//output image
 	img_out = ImageCreate(img_w, img_h);
 
 
-	//get a number of rows for each processor
+
+	return 0;
+}
+
+int monus (int x, int y){
+	if (x - y < 0){
+		return 0;
+	}
+	return x;
+}
+
+int maxus (int x, int y, int max){
+	if (x + y > max){
+		return max;
+	}
+	return x + y;
+}
 
 
 
+int run() {
+
+
+	/** Setup MPI **/
 	MPI_Init(NULL, NULL);
 
 	// Get the number of processes
@@ -69,70 +105,84 @@ int main(int argc, char** argv) {
     //try to allocate num of rows with respect to world_size
     int row_blocks = ceil(img_h/world_size);
 
-    int my_starting_row = world_rank*row_blocks;
+    int my_starting_row = world_rank*row_blocks;	
 
-    size_t i = 0;
-    unsigned char my_colour = world_rank % 3;
-    for (i = my_starting_row; i < row_blocks*(world_rank+1); i++) {
-    	colorize_row(i,my_colour, img_w, img_h, img_out);
-    	printf("processor %d colorizing row %d\n", world_rank, i);
-    }
+
+    //do the calculations here
+    int i,j;
+
+	for ( i = my_starting_row; i < (world_rank+1)*row_blocks; i++){
+		for ( j = 0; j < img_h; j++){
+			averagePixels(i,j);
+		}
+	}
+
 
     if (world_rank != 0) {
-    	MPI_Send(&my_starting_row, 1, MPI_INT,0,0,MPI_COMM_WORLD);
-    }
+    	printf("all other send result to 0\n");
+    }	
     else {
-    	int i;
-    	for (i = 1; i < world_size; i++) {
-    		MPI_Recv(&my_starting_row, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    	}
-    }
+    	printf("rank 0 receive result\n");
+    }							
 
 
     if (world_rank == 0) {
-    	printf("DONE!\n");
-		ImageWrite(img_out, output_ppm);
-    }
+    	printf("rank 0 write result to output ppm\n");
+    }								
 
 
-
-
-
-
-
-
-
-    // Finalize the MPI environment.
     MPI_Finalize();
 
 
-	write_output();
-	cleanup();
 
-	return 1;
+
+
+	// printf("%i\n", img_in->width);
+	// printf("%i\n", img_in->height);
+
+	
+	// return 1;
 }
 
-void colorize_row(int row, unsigned char col,int width, int height, Image *img) {
 
-	int x = 0;
-	for (x = 0; x < width; x++) {
-		ImageSetPixel(img, x,row, col, (ImageGetPixel(img, x, row, col)+10)%25);
+
+
+void averagePixels(int x, int y) {
+	// struct Pixel p = {'100','150','100'};
+	int minX = monus(x,blur_radius);
+	int maxX = maxus(x,blur_radius,img_in->width);
+	int minY = monus(y,blur_radius);
+	int maxY = maxus(y,blur_radius,img_in->height);
+	int red = 0;
+	int green = 0;
+	int blue = 0;
+	int num_pixels = 0;
+	int i,j;
+	for ( i = minX; i <= maxX; i++){
+		for ( j = minY; j <= maxY; j++){
+			unsigned char r = ImageGetPixel(img_in, x, j, 0);
+			unsigned char g = ImageGetPixel(img_in, x, j, 1);
+			unsigned char b = ImageGetPixel(img_in, x, j, 2);
+			red += (int)r;
+			green +=(int) g;
+			blue += (int)b;
+			num_pixels++;
+		}
+
 	}
+	red = round(red / num_pixels);
+	green = round(green / num_pixels);
+	blue = round(blue / num_pixels);
+
+	ImageSetPixel(img_out, x, y, 0, red);
+	ImageSetPixel(img_out, x, y, 1, green);
+	ImageSetPixel(img_out, x, y, 2, blue);
 }
-
-
-
-
-
-
-
-
-
 
 void write_output() {
 
 	//now that we built img_out, save it to the desired file
-	// ImageWrite(img_out, output_ppm);
+	ImageWrite(img_out, output_ppm);
 }
 
 

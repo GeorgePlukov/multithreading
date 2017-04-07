@@ -1,13 +1,13 @@
 MPI_COMPILE_FLAGS = $(shell mpicc --showme:compile)
 MPI_LINK_FLAGS = $(shell mpicc --showme:link)
-CC=gcc
+MPICC=mpicc
 
 
-all:
-	mpicc -g -Wall -o pa4 pa4.c ppm.c
+MAIN=pa4.x
 
-
+$(MAIN): pa4.o ppm.o
+	$(MPICC) $(MPI_COMPILE_FLAGS)  $^  $(MPI_LINK_FLAGS) -o $@  
 
 
 clean:
-	$(RM) *.o *.x
+	$(RM) *.o *.x $(MAIN)

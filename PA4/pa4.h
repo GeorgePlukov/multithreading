@@ -2,9 +2,18 @@
 #define PA4_H
 
 
-void write_output();
-void cleanup();
 
+typedef struct Pixel {
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
+};
+
+
+
+void cleanup();
+int run();
+void averagePixels(int x, int y);
 
 
 #endif

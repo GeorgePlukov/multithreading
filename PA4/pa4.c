@@ -104,33 +104,64 @@ int run() {
 
     int my_starting_row = world_rank*row_blocks;	
 
-
+    Pixel pixel;
     /* Define a Pixel type for MPI */
     int num_items = 3;
-    int block_length = {1,1,1};
+    int block_length[] = {1,1,1};
     MPI_Datatype types[3] = {MPI_UNSIGNED_CHAR,MPI_UNSIGNED_CHAR,MPI_UNSIGNED_CHAR};
     MPI_Datatype mpi_pixel_type;
     MPI_Aint displ[3];
 
-    displ[0] = offsetof(pixel, red);
-    displ[1] = offsetof(pixel, green;
-    displ[2] = offsetof(pixel, blue);
+    displ[0] = offsetof(Pixel, red);
+    displ[1] = offsetof(Pixel, green);
+    displ[2] = offsetof(Pixel, blue);
 
     MPI_Type_create_struct(num_items, block_length, displ, types, &mpi_pixel_type);
     MPI_Type_commit(&mpi_pixel_type);
 
 
+    int *sendcounts;    // array describing how many elements to send to each process
+    int *displs;        // array describing the displacements where each segment begins
+    int rem = (img_h*img_w)%world_size;
+    int sum = 0;
+    //need to get send count. num of elements to send for each process
+    int i;
+    for (i = 0; i < world_size; i++) {
+        sendcounts[i] = (img_h*img_w)/world_size;
+        if (rem > 0) {
+            sendcounts[i]++;
+            rem--;
+        }
+
+        displs[i] = sum;
+        sum += sendcounts[i];
+    }
+
+    //get the displacement
 
 
 
 
 
+
+    unsigned char* send_buf = ImagePixelArray(img_in);
+    unsigned char* recv_buf = ImagePixelArray(img_in);
+
+    MPI_Scatterv(send_buf, sendcounts, displs, mpi_pixel_type, recv_buf, 10000, mpi_pixel_type, (int)0, MPI_COMM_WORLD);
+
+
+    if (world_rank == 0) {
+    	int k = 0;
+    	for (k = 0; k < world_size; k++) {
+   			printf("sendcounts[%d]: %d , displs = \n", k, sendcounts[k], displs);
+   		}
+   	}
     //do the calculations here
-    int i,j;
+    int x,j;
 
-	for ( i = my_starting_row; i < (world_rank+1)*row_blocks; i++){
+	for ( x = my_starting_row; x < (world_rank+1)*row_blocks; x++){
 		for ( j = 0; j < img_w; j++){
-			averagePixels(i,j);
+			averagePixels(x,j);
 		}
 	}
 

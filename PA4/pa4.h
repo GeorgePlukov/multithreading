@@ -3,11 +3,11 @@
 
 
 
-struct Pixel {
+typedef struct Pixel {
     unsigned char red;
     unsigned char green;
     unsigned char blue;
-}, pixel;
+} Pixel;
 
 
 

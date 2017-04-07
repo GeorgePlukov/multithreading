@@ -186,7 +186,7 @@ ImageGetPixel(Image *image, int x, int y, int chan)
 }
 
 unsigned char*
-ImagePixelArray(){
+ImagePixelArray(Image *image){
 
   return image->data; 
 }

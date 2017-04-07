@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
 	img_w = ImageWidth(img_in);
 	img_h = ImageHeight(img_in);
-
+	printf("Dimensions %d x %d\n", img_w, img_h);
 	//output image
 	img_out = ImageCreate(img_w, img_h);
 

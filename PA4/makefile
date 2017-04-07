@@ -1,16 +1,13 @@
-LDFLAGS= -lm
-CFLAGS=-g -Wall
+MPI_COMPILE_FLAGS = $(shell mpicc --showme:compile)
+MPI_LINK_FLAGS = $(shell mpicc --showme:link)
 CC=gcc
-MPICC=mpicc
-
-pa4= pa4
-
-all: $(pa4)
 
 
-$(pa4): pa4.o ppm.o
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
-	./pa4 1 fox.ppm fox.ppm
+all:
+	mpicc -g -Wall -o pa4 pa4.c ppm.c
+
+
+
 
 clean:
-	$(RM) *.o $(pa4)
+	$(RM) *.o *.x

@@ -61,6 +61,7 @@ int init() {
 	return 0;
 }
 
+
 int monus (int x, int y){
 	if (x - y < 0){
 		return 0;
@@ -68,12 +69,14 @@ int monus (int x, int y){
 	return x;
 }
 
+
 int maxus (int x, int y, int max){
 	if (x + y > max){
 		return max;
 	}
 	return x + y;
 }
+
 
 
 int run() {
@@ -122,7 +125,6 @@ int run() {
 
     int x, y, idx = 0;
 	for ( y = my_starting_row; y < my_ending_row && y < img_h; y++){
-		// printf("WORKING ON ROW %d\n",y );
 		for ( x = 0; x < img_w; x++){
 			my_row_values[idx++] =  averagePixels(x,y);	
 		}
@@ -165,8 +167,6 @@ int run() {
     MPI_Type_free(&mpi_row_pixels);
     printf("%d has finished \n", world_rank );
     MPI_Finalize();
-
-
 
 
 
@@ -251,6 +251,7 @@ void update_image(struct J_Pixel pixel) {
 	ImageSetPixel(img_out, pixel.x, pixel.y, 0, pixel.r);
 	ImageSetPixel(img_out, pixel.x, pixel.y, 1, pixel.g);
 	ImageSetPixel(img_out, pixel.x, pixel.y, 2, pixel.b);
+
 }
 
 void writeoutput() {

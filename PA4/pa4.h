@@ -15,11 +15,10 @@ struct J_Pixel {
 	unsigned char r,g,b;
 };
 
+int run();
 void cleanup();
 void writeoutput();
-int run();
-struct J_Pixel averagePixels(int x, int y);
 void update_image(struct J_Pixel pixel);
-
+struct J_Pixel averagePixels(int x, int y);
 
 #endif

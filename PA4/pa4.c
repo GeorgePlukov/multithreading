@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 	run();
 
 
-	return 1;
+	return 0;
 }
 
 
@@ -120,7 +120,7 @@ int run() {
 
     //do the calculations here
 
-    int x,y, idx = 0;
+    int x, y, idx = 0;
 	for ( y = my_starting_row; y < my_ending_row && y < img_h; y++){
 		// printf("WORKING ON ROW %d\n",y );
 		for ( x = 0; x < img_w; x++){
@@ -145,7 +145,6 @@ int run() {
     		
     	for (proc = 1; proc < world_size; proc++) {
     		MPI_Recv(&my_row_values, 1, mpi_row_pixels, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
     		for (item = 0; item < img_w*row_blocks; item++) {
     			update_image(my_row_values[item]);
     		}
@@ -164,14 +163,14 @@ int run() {
 
     MPI_Type_free(&mpi_unit_pixel);
     MPI_Type_free(&mpi_row_pixels);
-
+    printf("%d has finished \n", world_rank );
     MPI_Finalize();
 
 
 
 
 
-	return 1;
+	return 0;
 }
 
 
@@ -232,8 +231,8 @@ int create_pixel_type(MPI_Datatype *mpi_pixel) {
 	        MPI_UNSIGNED_CHAR
 	};
 	MPI_Aint dis[5] = {          
-			offsetof(struct J_Pixel, r),
-			offsetof(struct J_Pixel, r),
+			offsetof(struct J_Pixel, x),
+			offsetof(struct J_Pixel, y),
 	        offsetof(struct J_Pixel, r),
 	        offsetof(struct J_Pixel, g),
 	        offsetof(struct J_Pixel, b)
@@ -242,7 +241,7 @@ int create_pixel_type(MPI_Datatype *mpi_pixel) {
 	MPI_Type_create_struct(count, blocks, dis, types, mpi_pixel);
 	MPI_Type_commit(mpi_pixel);
 
-	return 1;
+	return 0;
 }
 
 

@@ -40,7 +40,15 @@ int main(int argc, char** argv) {
 	}
 
 	init();
+
+	double start_time, finish_time;
+
+	start_time = MPI_Wtime();
 	run();
+	finish_time = MPI_Wtime();					
+
+
+    printf("Elapsed time = %f seconds \n", finish_time - start_time );
 
 
 	return 0;
@@ -81,7 +89,7 @@ int maxus (int x, int y, int max){
 
 int run() {
 
-
+	
 	/** Setup MPI **/
 	MPI_Init(NULL, NULL);
 
@@ -155,17 +163,13 @@ int run() {
 
 
     if (world_rank == 0) {
-    	printf("rank 0 write result to output ppm\n");
-    	printf("Image Size (%d %d) \n", img_w, img_h);
     	writeoutput();
     	cleanup();
+    }			
 
-    }								
-
-
+    
     MPI_Type_free(&mpi_unit_pixel);
     MPI_Type_free(&mpi_row_pixels);
-    printf("%d has finished \n", world_rank );
     MPI_Finalize();
 
 

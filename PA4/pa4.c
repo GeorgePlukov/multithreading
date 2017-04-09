@@ -213,17 +213,18 @@ struct J_Pixel averagePixels(int x, int y) {
 	int blue = 0;
 	int num_pixels = 0;
 	int i,j;
+	unsigned char r = 0, g = 0, b = 0;
+
 	for ( i = minX; i <= maxX; i++){
 		for ( j = minY; j <= maxY; j++){
-			unsigned char r = ImageGetPixel(img_in, x, j, 0);
-			unsigned char g = ImageGetPixel(img_in, x, j, 1);
-			unsigned char b = ImageGetPixel(img_in, x, j, 2);
+			r = ImageGetPixel(img_in, x, j, 0);
+			g = ImageGetPixel(img_in, x, j, 1);
+			b = ImageGetPixel(img_in, x, j, 2);
 			red += (int)r;
 			green +=(int) g;
 			blue += (int)b;
 			num_pixels++;
 		}
-
 	}
 	red = round(red / num_pixels);
 	green = round(green / num_pixels);
@@ -290,6 +291,8 @@ void writeoutput() {
 
 
 void cleanup() {
+	
 	free(img_in);
 	free(img_out);
+
 }

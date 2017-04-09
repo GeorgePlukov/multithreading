@@ -41,14 +41,8 @@ int main(int argc, char** argv) {
 
 	init();
 
-	double start_time, finish_time;
-
-	start_time = MPI_Wtime();
 	run();
-	finish_time = MPI_Wtime();					
-
-
-    printf("Elapsed time = %f seconds \n", finish_time - start_time );
+	
 
 
 	return 0;
@@ -106,7 +100,12 @@ int run() {
     int name_len;
     MPI_Get_processor_name(processor_name, &name_len);
 
-    	
+
+    //setup timer
+    double local_start, local_finish, local_elapsed, elapased;
+    MPI_Barrier(MPI_COMM_WORLD);
+    local_start = MPI_Wtime();
+    
     //try to allocate num of rows with respect to world_size
     int row_blocks 		= ceil((float)img_h/world_size);
     int my_starting_row = world_rank*row_blocks;	
@@ -124,13 +123,22 @@ int run() {
 
     	
 
+    //initialize array for each process to use
     struct J_Pixel my_row_values[my_num_pixels];
+    int num_items = sizeof(my_row_values)/sizeof(my_row_values[0]);
+    int i;
+    for (i = 0; i < num_items; ++i) {
+    	my_row_values[i].x = 0;
+    	my_row_values[i].y = 0;
+    	my_row_values[i].r = 0;
+    	my_row_values[i].g = 0;
+    	my_row_values[i].b = 0;
+    }
 
-    printf("Process %d traverses rows %d to %d with a total of %d pixels. (row blocks = %d)\n", 
-    		world_rank, my_starting_row, my_ending_row-1,  my_num_pixels, row_blocks);
+
+
 
     //do the calculations here
-
     int x, y, idx = 0;
 	for ( y = my_starting_row; y < my_ending_row && y < img_h; y++){
 		for ( x = 0; x < img_w; x++){
@@ -142,7 +150,7 @@ int run() {
 	// send results
 
     if (world_rank != 0) {
-    	MPI_Send(&my_row_values, 1, mpi_row_pixels, 0, 0, MPI_COMM_WORLD);
+    	MPI_Ssend(&my_row_values, 1, mpi_row_pixels, 0, 0, MPI_COMM_WORLD);
     }	
 
     else {
@@ -152,6 +160,7 @@ int run() {
     	for (item = 0; item < img_w*row_blocks; item++) {
     		update_image(my_row_values[item]);
     	}
+    	
     		
     	for (proc = 1; proc < world_size; proc++) {
     		MPI_Recv(&my_row_values, 1, mpi_row_pixels, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -159,13 +168,26 @@ int run() {
     			update_image(my_row_values[item]);
     		}
     	}
-    }							
+    }			
+
+
+
+
 
 
     if (world_rank == 0) {
     	writeoutput();
     	cleanup();
     }			
+
+
+    local_finish = MPI_Wtime();
+    local_elapsed  = local_finish - local_start;
+    MPI_Reduce(&local_elapsed, &elapased, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (world_rank == 0) {
+    	printf("Total execution time %f seconds \tnp = %d \t  file = %s\n", elapased, world_size, input_ppm);
+    }
 
     
     MPI_Type_free(&mpi_unit_pixel);
@@ -224,7 +246,6 @@ struct J_Pixel averagePixels(int x, int y) {
 /* source : http://stackoverflow.com/questions/20228772 */
 int create_pixel_type(MPI_Datatype *mpi_pixel) {
 	//setup our data types
-	struct J_Pixel pixel;        /* instance of structure */
 	int count = 5;
 	int blocks[5] = {1, 1, 1, 1, 1};
 	MPI_Datatype types[5] = {    

@@ -3,22 +3,18 @@
 
 
 
-typedef struct Pixel {
-    unsigned char red;
-    unsigned char green;
-    unsigned char blue;
-} Pixel;
 
 
-struct J_Pixel {
+struct Pixel {
 	int x,y;
 	unsigned char r,g,b;
 };
 
 int run();
+int init();
 void cleanup();
 void writeoutput();
-void update_image(struct J_Pixel pixel);
-struct J_Pixel averagePixels(int x, int y);
+void update_image(struct Pixel pixel);
+struct Pixel averagePixels(int x, int y);
 
 #endif

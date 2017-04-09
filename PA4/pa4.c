@@ -110,7 +110,7 @@ int run() {
     int row_blocks 		= ceil((float)img_h/world_size);
     int my_starting_row = world_rank*row_blocks;	
     int my_ending_row   = (world_rank+1)*row_blocks;
-    int my_num_pixels   = img_w*row_blocks;
+    size_t my_num_pixels   = img_w*row_blocks;
 
 
    	//setup the datatypes we will need to send over 
@@ -121,17 +121,17 @@ int run() {
     MPI_Type_contiguous(my_num_pixels, mpi_unit_pixel, &mpi_row_pixels);
     MPI_Type_commit(&mpi_row_pixels);
 
-    	
-
+   	
     //initialize array for each process to use
-    struct J_Pixel my_row_values[my_num_pixels];
-    int num_items = sizeof(my_row_values)/sizeof(my_row_values[0]);
-    int i;
-    for (i = 0; i < num_items; ++i) {
-    	my_row_values[i].x = 0;
-    	my_row_values[i].y = 0;
+    struct Pixel *my_row_values = malloc(sizeof(*my_row_values)*my_num_pixels);
+    size_t i;
+
+
+     for (i = 1	; i < my_num_pixels; i++) {
+     	my_row_values[i].x = 0;
+    	my_row_values[i].y = 0;		
     	my_row_values[i].r = 0;
-    	my_row_values[i].g = 0;
+    	my_row_values[i].g = 0;		
     	my_row_values[i].b = 0;
     }
 
@@ -139,38 +139,39 @@ int run() {
 
 
     //do the calculations here
-    int x, y, idx = 0;
+    int x = 0, y = 0;
+    size_t index = 0;
 	for ( y = my_starting_row; y < my_ending_row && y < img_h; y++){
 		for ( x = 0; x < img_w; x++){
-			my_row_values[idx++] =  averagePixels(x,y);	
+			my_row_values[index++] =  averagePixels(x,y);	
 		}
 	}
 
 
 	// send results
-
     if (world_rank != 0) {
-    	MPI_Ssend(&my_row_values, 1, mpi_row_pixels, 0, 0, MPI_COMM_WORLD);
+    	MPI_Ssend(my_row_values, 1, mpi_row_pixels, 0, 0, MPI_COMM_WORLD);
     }	
 
     else {
 
     	//update the image with process 0's result, then update each subsequent processes' data
     	int item, proc;
-    	for (item = 0; item < img_w*row_blocks; item++) {
+    	for (item = 0; item < my_num_pixels; item++) {
     		update_image(my_row_values[item]);
     	}
     	
     		
     	for (proc = 1; proc < world_size; proc++) {
-    		MPI_Recv(&my_row_values, 1, mpi_row_pixels, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    		for (item = 0; item < img_w*row_blocks; item++) {
+    		MPI_Recv(my_row_values, 1, mpi_row_pixels, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    		for (item = 0; item < my_num_pixels; item++) {
     			update_image(my_row_values[item]);
     		}
     	}
     }			
 
 
+   
 
 
 
@@ -202,8 +203,7 @@ int run() {
 
 
 
-struct J_Pixel averagePixels(int x, int y) {
-	// struct Pixel p = {'100','150','100'};
+struct Pixel averagePixels(int x, int y) {
 	int minX = monus(x,blur_radius);
 	int maxX = maxus(x,blur_radius,img_in->width);
 	int minY = monus(y,blur_radius);
@@ -217,20 +217,21 @@ struct J_Pixel averagePixels(int x, int y) {
 
 	for ( i = minX; i <= maxX; i++){
 		for ( j = minY; j <= maxY; j++){
-			r = ImageGetPixel(img_in, x, j, 0);
-			g = ImageGetPixel(img_in, x, j, 1);
-			b = ImageGetPixel(img_in, x, j, 2);
+			r = ImageGetPixel(img_in, i, j, 0);
+			g = ImageGetPixel(img_in, i, j, 1);
+			b = ImageGetPixel(img_in, i, j, 2);
 			red += (int)r;
 			green +=(int) g;
 			blue += (int)b;
 			num_pixels++;
 		}
 	}
+
 	red = round(red / num_pixels);
 	green = round(green / num_pixels);
 	blue = round(blue / num_pixels);
 
-	struct J_Pixel jp;
+	struct Pixel jp;
 
 	jp.x = x;
 	jp.y = y;
@@ -257,11 +258,11 @@ int create_pixel_type(MPI_Datatype *mpi_pixel) {
 	        MPI_UNSIGNED_CHAR
 	};
 	MPI_Aint dis[5] = {          
-			offsetof(struct J_Pixel, x),
-			offsetof(struct J_Pixel, y),
-	        offsetof(struct J_Pixel, r),
-	        offsetof(struct J_Pixel, g),
-	        offsetof(struct J_Pixel, b)
+			offsetof(struct Pixel, x),
+			offsetof(struct Pixel, y),
+	        offsetof(struct Pixel, r),
+	        offsetof(struct Pixel, g),
+	        offsetof(struct Pixel, b)
 	};
 
 	MPI_Type_create_struct(count, blocks, dis, types, mpi_pixel);
@@ -272,7 +273,7 @@ int create_pixel_type(MPI_Datatype *mpi_pixel) {
 
 
 //given a pixel, update it on the img_out
-void update_image(struct J_Pixel pixel) {
+void update_image(struct Pixel pixel) {
 
 	ImageSetPixel(img_out, pixel.x, pixel.y, 0, pixel.r);
 	ImageSetPixel(img_out, pixel.x, pixel.y, 1, pixel.g);
@@ -281,7 +282,6 @@ void update_image(struct J_Pixel pixel) {
 }
 
 void writeoutput() {
-
 	//now that we built img_out, save it to the desired file
 	ImageWrite(img_out, output_ppm);
 }
@@ -291,8 +291,6 @@ void writeoutput() {
 
 
 void cleanup() {
-	
 	free(img_in);
 	free(img_out);
-
 }

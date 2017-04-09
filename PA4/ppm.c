@@ -31,7 +31,7 @@ die(char *message)
 static void
 checkDimension(int dim)
 {
-  if (dim < 1 || dim > 4000)
+  if (dim < 1 || dim > 8000)
     die("file contained unreasonable width or height");
 }
 

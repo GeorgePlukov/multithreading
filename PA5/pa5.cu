@@ -20,11 +20,15 @@ struct Image* img_out;
 
 
 
-__global__ void hello() {
+__global__ void hello(int w, int h, struct Pixel *in, struct Pixel *out) {
 	// int myId = 1;
 	int blockId =  blockIdx.y * gridDim.x + blockIdx.x;		
 	int threadId = blockId * blockDim.x + threadIdx.x; 
-	printf("hello from blockid: %d threadId: %d \n",  blockId, threadId);
+	int index = 0;
+	if (blockId == 1079) {
+		printf("hello from blockid: %d threadId: %d \n",  blockId, threadId);
+		printf("Pixel (x,y,r,g,b) :  (%d %d %d %d %d) \n",  in[blockId].x,in[blockId].y,in[blockId].r,in[blockId].g,in[blockId].b );
+	}
 }
 
 
@@ -76,19 +80,60 @@ int init() {
 int run() {
 
 
-	// size_t num_pixels   = img_w*img_h;
-	// struct Pixel **pixel_values = malloc(sizeof(*my_row_values)*num_pixels);
+	int num_pixels   = img_w*img_h;
+	struct Pixel *pixels_host_in  = 	(Pixel *) malloc(sizeof(Pixel *)*num_pixels);
+	struct Pixel *pixels_host_out = 	(Pixel *) malloc(sizeof(Pixel *)*num_pixels);
 
-	hello<<<grid_dim, block_dim>>>();
+	struct Pixel *pixel_device_in ;
+	struct Pixel *pixel_device_out ;
 
+
+	cudaMalloc((void **) &pixel_device_in,  (sizeof(Pixel *)*num_pixels));
+	cudaMalloc((void **) &pixel_device_out,  (sizeof(Pixel *)*num_pixels));
+
+
+	// populate pixel_device_in
+	int x,y;
+	int index = 0;
+	for (y = 0; y < img_h; y++) {
+		for (x = 0; x < img_w; x++) {
+			index = y*img_w+x;
+			// printf("index = %d\n", index );
+			pixels_host_in[index].x = x;
+			pixels_host_in[index].y = y;
+			pixels_host_in[index].r = ImageGetPixel(img_in, x, y, 0);
+			pixels_host_in[index].g = ImageGetPixel(img_in, x, y, 1);
+			pixels_host_in[index].b = ImageGetPixel(img_in, x, y, 2);
+
+		}
+	}
+
+
+	cudaMemcpy(pixel_device_in, pixels_host_in, sizeof(Pixel *)*num_pixels, cudaMemcpyHostToDevice);
+
+	hello<<<grid_dim, block_dim>>>(img_w, img_h, pixel_device_in, pixel_device_out);
 
 	cudaDeviceSynchronize();
+
+	cudaMemcpy(pixels_host_out, pixel_device_out, sizeof(Pixel *)*num_pixels, cudaMemcpyDeviceToHost);
+
+
+
+	cudaFree((void*) pixel_device_in);
+	cudaFree((void*) pixel_device_out);
+
+	free(pixels_host_in);
+	free(pixels_host_out);
+
+	printf("num pixels = %d\n", num_pixels );
+	printf("Image size is (width: %d, height: %d) \n", img_w, img_h);
+
 
 	return 1;
 }
 
 
-int monus (int x, int y) {
+__device__ int monus (int x, int y) {
 	if (x - y < 0){
 		return 0;
 	}
@@ -96,7 +141,7 @@ int monus (int x, int y) {
 }
 
 
-int maxus (int x, int y, int max) {
+__device__ int maxus (int x, int y, int max) {
 	if (x + y > max){
 		return max;
 	}
@@ -104,7 +149,7 @@ int maxus (int x, int y, int max) {
 }
 
 
-struct Pixel averagePixels(int x, int y) {
+__device__ struct Pixel averagePixels(int x, int y) {
 	int minX = monus(x,blur_radius);
 	int maxX = maxus(x,blur_radius,img_in->width);
 	int minY = monus(y,blur_radius);

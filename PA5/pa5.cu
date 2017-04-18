@@ -69,7 +69,7 @@ int init() {
 
 int run() {
 
-	hello<<<1,10>>>();
+	hello<<<1,1>>>();
 	cudaDeviceSynchronize();
 
 	return 1;

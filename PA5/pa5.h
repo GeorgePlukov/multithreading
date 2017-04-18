@@ -9,7 +9,6 @@ struct Pixel {
 
 int run();
 int init();
-void cleanup();
 void writeoutput();
 void update_image(struct Pixel pixel);
 struct Pixel averagePixels(int x, int y);

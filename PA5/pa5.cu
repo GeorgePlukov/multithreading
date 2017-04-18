@@ -4,7 +4,8 @@
 #include "pa5.h"
 #include "ppm.h"
 
-
+__device__ int monus(int x, int y);
+__device__ int maxus(int x, int y,int max);
 
 dim3 block_dim, grid_dim;
 
@@ -20,14 +21,54 @@ struct Image* img_out;
 
 
 
-__global__ void hello(int w, int h, struct Pixel *in, struct Pixel *out) {
+__global__ void hello(int w, int h,int r, struct Pixel *in, struct Pixel *out) {
 	// int myId = 1;
-	int blockId =  blockIdx.y * gridDim.x + blockIdx.x;		
-	int threadId = blockId * blockDim.x + threadIdx.x; 
+	int blockId =  blockIdx.y * gridDim.x + blockIdx.x;
+	int threadId = blockId * blockDim.x + threadIdx.x;
 	int index = 0;
 	if (blockId == 1079) {
 		printf("hello from blockid: %d threadId: %d \n",  blockId, threadId);
 		printf("Pixel (x,y,r,g,b) :  (%d %d %d %d %d) \n",  in[blockId].x,in[blockId].y,in[blockId].r,in[blockId].g,in[blockId].b );
+
+
+		int minX = monus(in[blockId].x,r);
+		int maxX = maxus(in[blockId].x,r,w);
+		int minY = monus(in[blockId].y,r);
+		int maxY = maxus(in[blockId].y,r,h);
+		int red = 0;
+		int green = 0;
+		int blue = 0;
+		int num_pixels = 0;
+		int i,j;
+		unsigned char r = 0, g = 0, b = 0;
+
+		for ( i = minX; i <= maxX; i++){
+			for ( j = minY; j <= maxY; j++){
+
+				r = in[i*w+j + threadId%3].r;
+				g = in[i*w+j + threadId%3 +1].g;
+				b = in[i*w+j + threadId%3 +2].b;
+				red += (int)r;
+				green +=(int) g;
+				blue += (int)b;
+				num_pixels++;
+			}
+		}
+
+		red   = floor( (float) red / num_pixels );
+		green = floor((float) green / num_pixels);
+		blue  = floor((float) blue / num_pixels);
+
+		struct Pixel jp;
+
+
+		jp.x = in[blockId].x;
+		jp.y = in[blockId].y;
+		jp.r = red;
+		jp.b = blue;
+		jp.g = green;
+
+		out[blockId] = jp;
 	}
 }
 
@@ -111,7 +152,7 @@ int run() {
 
 	cudaMemcpy(pixel_device_in, pixels_host_in, sizeof(Pixel *)*num_pixels, cudaMemcpyHostToDevice);
 
-	hello<<<grid_dim, block_dim>>>(img_w, img_h, pixel_device_in, pixel_device_out);
+	hello<<<grid_dim, block_dim>>>(img_w, img_h, blur_radius, pixel_device_in, pixel_device_out);
 
 	cudaDeviceSynchronize();
 
@@ -149,44 +190,46 @@ __device__ int maxus (int x, int y, int max) {
 }
 
 
-__device__ struct Pixel averagePixels(int x, int y) {
-	int minX = monus(x,blur_radius);
-	int maxX = maxus(x,blur_radius,img_in->width);
-	int minY = monus(y,blur_radius);
-	int maxY = maxus(y,blur_radius,img_in->height);
-	int red = 0;
-	int green = 0;
-	int blue = 0;
-	int num_pixels = 0;
-	int i,j;
-	unsigned char r = 0, g = 0, b = 0;
-
-	for ( i = minX; i <= maxX; i++){
-		for ( j = minY; j <= maxY; j++){
-			r = ImageGetPixel(img_in, i, j, 0);
-			g = ImageGetPixel(img_in, i, j, 1);
-			b = ImageGetPixel(img_in, i, j, 2);
-			red += (int)r;
-			green +=(int) g;
-			blue += (int)b;
-			num_pixels++;
-		}
-	}
-
-	red   = floor(red / num_pixels);
-	green = floor(green / num_pixels);
-	blue  = floor(blue / num_pixels);
-
-	struct Pixel jp;
-
-	jp.x = x;
-	jp.y = y;
-	jp.r = red;
-	jp.b = blue;
-	jp.g = green;
-
-	return jp;
-}
+// __device__ struct Pixel averagePixels(int x, int y, struct Pixel *in) {
+// 	int minX = monus(x,blur_radius);
+// 	int maxX = maxus(x,blur_radius,img_in->width);
+// 	int minY = monus(y,blur_radius);
+// 	int maxY = maxus(y,blur_radius,img_in->height);
+// 	int red = 0;
+// 	int green = 0;
+// 	int blue = 0;
+// 	int num_pixels = 0;
+// 	int i,j;
+// 	unsigned char r = 0, g = 0, b = 0;
+//
+// 	for ( i = minX; i <= maxX; i++){
+// 		for ( j = minY; j <= maxY; j++){
+//
+//
+// 			r = ImageGetPixel(img_in, i, j, 0);
+// 			g = ImageGetPixel(img_in, i, j, 1);
+// 			b = ImageGetPixel(img_in, i, j, 2);
+// 			red += (int)r;
+// 			green +=(int) g;
+// 			blue += (int)b;
+// 			num_pixels++;
+// 		}
+// 	}
+//
+// 	red   = floor(red / num_pixels);
+// 	green = floor(green / num_pixels);
+// 	blue  = floor(blue / num_pixels);
+//
+// 	struct Pixel jp;
+//
+// 	jp.x = x;
+// 	jp.y = y;
+// 	jp.r = red;
+// 	jp.b = blue;
+// 	jp.g = green;
+//
+// 	return jp;
+// }
 
 
 //given a pixel, update it on the img_out

@@ -5,7 +5,8 @@
 #include "ppm.h"
 
 
-
+dim3 b(3,3,3);
+dim3 g(20,100);
 
 int blur_radius;
 int img_w;
@@ -20,8 +21,14 @@ struct Image* img_out;
 
 
 __global__ void hello() {
-	int myId = 1;
-	printf("hello from %d \n",  myId);
+	// int myId = 1;
+	int blockId = blockIdx.x
+			 + blockIdx.y * gridDim.x;
+	int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+			   + (threadIdx.z * (blockDim.x * blockDim.y))
+			   + (threadIdx.y * blockDim.x)
+			   + threadIdx.x;
+	printf("hello from blockid: %d threadId: %d \n",  blockId, threadId);
 }
 
 
@@ -69,7 +76,7 @@ int init() {
 
 int run() {
 
-	hello<<<1,1>>>();
+	hello<<<g,b>>>();
 	cudaDeviceSynchronize();
 
 	return 1;
@@ -154,11 +161,3 @@ void cleanup() {
 	free(img_in);
 	free(img_out);
 }
-
-
-
-
-
-
-
-

@@ -92,8 +92,6 @@ int main(int argc, char** argv) {
 
 	run();
 
-
-
 	return 0;
 }
 
@@ -113,19 +111,19 @@ int init() {
 }
 
 
-int run() {
+__host__ int run() {
 
 
 	int num_pixels   = img_w*img_h;
-	struct Pixel *pixels_host_in  = 	(Pixel *) malloc(sizeof(Pixel *)*num_pixels);
-	struct Pixel *pixels_host_out = 	(Pixel *) malloc(sizeof(Pixel *)*num_pixels);
+	struct Pixel *pixels_host_in  = 	(Pixel *) malloc(sizeof(Pixel *)*num_pixels+1);
+	struct Pixel *pixels_host_out = 	(Pixel *) malloc(sizeof(Pixel *)*num_pixels+1);
 
 	struct Pixel *pixel_device_in ;
 	struct Pixel *pixel_device_out ;
 
 
-	cudaMalloc((void **) &pixel_device_in,  (sizeof(Pixel *)*num_pixels));
-	cudaMalloc((void **) &pixel_device_out, (sizeof(Pixel *)*num_pixels));
+	// cudaMalloc((void **) &pixel_device_in,  (sizeof(Pixel *)*num_pixels));
+	// cudaMalloc((void **) &pixel_device_out, (sizeof(Pixel *)*num_pixels));
 
 
 	// populate pixel_device_in
@@ -134,57 +132,80 @@ int run() {
 	for (y = 0; y < img_h; y++) {
 		for (x = 0; x < img_w; x++) {
 			index = y*img_w+x;
-			// printf("index = %d\n", index );
 			pixels_host_in[index].x = x;
 			pixels_host_in[index].y = y;
 			pixels_host_in[index].r = ImageGetPixel(img_in, x, y, 0);
 			pixels_host_in[index].g = ImageGetPixel(img_in, x, y, 1);
 			pixels_host_in[index].b = ImageGetPixel(img_in, x, y, 2);
+			// // if ()
+			// printf("%d %d %D\n", );
+			ImageSetPixel(img_out, x, y, 0, pixels_host_in[index].r);
+			ImageSetPixel(img_out, x, y, 1, pixels_host_in[index].g);
+			ImageSetPixel(img_out, x, y, 2, pixels_host_in[index].b);
+			// if (y <=60  && x == 0){
+			// 	printf("index: %d x: %d y: %d \n", index, x, y );
+			//
+			// 	printf("r:%d g:%d b:%d\n", pixels_host_in[index].r,pixels_host_in[index].g,pixels_host_in[index].b);
+			//
+			// 	ImageSetPixel(img_in, x, y, 0,(unsigned char)  100);
+			// 	ImageSetPixel(img_in, x, y, 1, (unsigned char)  10);
+			// 	ImageSetPixel(img_in, x, y, 2, (unsigned char)  0);
+			// 	printf("Fuck you: r:%d g: %d b:%d\n", ImageGetPixel(img_in, x, y, 0),ImageGetPixel(img_in, x, y, 1),ImageGetPixel(img_in, x, y, 2));
+			//
+			// } else{
 
+			// }
+
+			// ImageSetPixel(img_in, x, y, 0, (unsigned char) 0);
+			// ImageSetPixel(img_in, x, y, 1, (unsigned char) 0);
+			// ImageSetPixel(img_in, x, y, 2, (unsigned char) 0);
 		}
 	}
 
 
-	cudaMemcpy(pixel_device_in, (Pixel*)pixels_host_in, sizeof(Pixel *)*num_pixels, cudaMemcpyHostToDevice);
+	// cudaMemcpy(pixel_device_in, (Pixel*)pixels_host_in, sizeof(Pixel *)*num_pixels, cudaMemcpyHostToDevice);
 
-	hello<<<grid_dim, block_dim>>>(img_w, img_h, blur_radius, pixel_device_in, pixel_device_out);
+	// hello<<<grid_dim, block_dim>>>(img_w, img_h, blur_radius, pixel_device_in, pixel_device_out);
 
-	cudaDeviceSynchronize();
-	cudaGetLastError();
+	// cudaDeviceSynchronize();
+	// cudaGetLastError();
 
-	cudaMemcpy((Pixel*)pixels_host_out, pixel_device_out, sizeof(Pixel *)*num_pixels, cudaMemcpyDeviceToHost);
+	// cudaMemcpy((Pixel*)pixels_host_out, pixel_device_out, sizeof(Pixel *)*num_pixels, cudaMemcpyDeviceToHost);
 
 
 	printf("here\n");
 
 	//write result back to ppm img
-	for (y = 0; y < img_h; y++) {
-		for (x = 0; x < img_w; x++) {
-			index = y*img_w+x;
-			ImageSetPixel(img_out, pixels_host_out[index].x, pixels_host_out[index].y, 0, pixels_host_out[index].r);
-			ImageSetPixel(img_out, pixels_host_out[index].x, pixels_host_out[index].y, 1, pixels_host_out[index].g);
-			ImageSetPixel(img_out, pixels_host_out[index].x, pixels_host_out[index].y, 2, pixels_host_out[index].b);
-			printf("%d \t %d %d (%d %d %d) \n", 
-				index,
-				pixels_host_out[index].x, 
-				pixels_host_out[index].y, 
-				pixels_host_out[index].r, 
-				pixels_host_out[index].g, 
-				pixels_host_out[index].b);
-		}	
-	}
-	
+	// for (y = 0; y < img_w; y++) {
+	// 	for (x = 0; x < img_h; x++) {
+	// 		// printf("%d", index);
+	// 		index = y*img_w+x;
+	// 		// ImageSetPixel(img_out, pixels_host_out[index].x, pixels_host_out[index].y, 0, pixels_host_out[index].r);
+	// 		// ImageSetPixel(img_out, pixels_host_out[index].x, pixels_host_out[index].y, 1, pixels_host_out[index].g);
+	// 		// ImageSetPixel(img_out, pixels_host_out[index].x, pixels_host_out[index].y, 2, pixels_host_out[index].b);
+	// 		// printf("%d \t %d %d (%d %d %d) \n",
+	// 			// index,
+	// 			// pixels_host_out[index].x,
+	// 			// pixels_host_out[index].y,
+	// 			// pixels_host_out[index].r,
+	// 			// pixels_host_out[index].g,
+	// 			// pixels_host_out[index].b);
+	// 	}
+	// }
+
 	printf("done\n");
-
+	// ImageSetPixel(img_in, 0, 0, 0, (unsigned char) 0);
+	// ImageSetPixel(img_in, 0, 0, 1, (unsigned char)  0);
+	// ImageSetPixel(img_in, 0, 0, 2, (unsigned char)  0);
 	ImageWrite(img_out, output_ppm);
-
-	cudaFree((void*) pixel_device_in);
-	cudaFree((void*) pixel_device_out);
-
+	//
+	// cudaFree((void*) pixel_device_in);
+	// cudaFree((void*) pixel_device_out);
+	//
 	free(pixels_host_in);
 	free(pixels_host_out);
-	free(img_in);
-	free(img_out);
+	// free(img_in);
+	// free(img_out);
 
 	printf("num pixels = %d\n", num_pixels );
 	printf("Image size is (width: %d, height: %d) \n", img_w, img_h);
@@ -210,13 +231,9 @@ __device__ int maxus (int x, int y, int max) {
 }
 
 
-
-
-//given a pixel, update it on the img_out
-void update_image(struct Pixel pixel) {
-	ImageSetPixel(img_out, pixel.x, pixel.y, 0, pixel.r);
-	ImageSetPixel(img_out, pixel.x, pixel.y, 1, pixel.g);
-	ImageSetPixel(img_out, pixel.x, pixel.y, 2, pixel.b);
-}
-
-
+// //given a pixel, update it on the img_out
+// void update_image(struct Pixel pixel) {
+// 	ImageSetPixel(img_out, pixel.x, pixel.y, 0, pixel.r);
+// 	ImageSetPixel(img_out, pixel.x, pixel.y, 1, pixel.g);
+// 	ImageSetPixel(img_out, pixel.x, pixel.y, 2, pixel.b);
+// }

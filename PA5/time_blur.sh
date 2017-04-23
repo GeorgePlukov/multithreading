@@ -1,14 +1,13 @@
 #!/bin/bash
 
-declare -a arr=("bird.ppm" )
-declare -a arr2=(1 2 4 8 16 32)
-radius=15
+declare -a arr=( "snail.ppm" "fox.ppm" "wolf.ppm" "bird.ppm" )
+declare -a radius=( 0 10 20 40 )
 
 
 for img in "${arr[@]}"
 do
-	for p in "${arr2[@]}"
+	for r in "${radius[@]}"
 	do
-		mpiexec -np ${p} ./pa4.x ${radius} ${img} out.ppm		
+		time  ./pa5.x ${r} ${img} out.ppm			
 	done
 done

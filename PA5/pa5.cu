@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
 	input_ppm  = argv[2];
 	output_ppm = argv[3];
 
-	if (blur_radius < 1) {
+	if (blur_radius < 0) {
 		printf("blur radius too small\n");
 		return 0;
 	}
@@ -189,9 +189,7 @@ int run() {
 	free(img_in);
 	free(img_out);
 
-	printf("Image size is (width: %d, height: %d) \n", img_w, img_h);
-	printf("Number of pixels blurred: %d\n", num_pixels );
-	printf("Blurred image written to %s\n", output_ppm);
+	printf("\nImage %s (width: %d, height: %d) \t blur Radius: %d \n", input_ppm, img_w, img_h, blur_radius);
 
 	return 1;
 }

@@ -115,8 +115,9 @@ __host__ int run() {
 
 
 	int num_pixels   = img_w*img_h;
-	struct Pixel *pixels_host_in  = 	(Pixel *) malloc(sizeof(Pixel *)*num_pixels+1);
-	struct Pixel *pixels_host_out = 	(Pixel *) malloc(sizeof(Pixel *)*num_pixels+1);
+	struct Pixel *pixels_host_in  = 	(Pixel *) malloc(sizeof(struct Pixel)*num_pixels);
+	struct Pixel *pixels_host_out = 	(Pixel *) malloc(sizeof(pixels_host_out)*num_pixels);
+
 
 	struct Pixel *pixel_device_in ;
 	struct Pixel *pixel_device_out ;
@@ -127,25 +128,35 @@ __host__ int run() {
 
 
 	// populate pixel_device_in
+	struct Pixel p;
+
 	int x,y;
 	int index = 0;
 	for (y = 0; y < img_h; y++) {
 		for (x = 0; x < img_w; x++) {
 			index = y*img_w+x;
-			pixels_host_in[index].x = x;
-			pixels_host_in[index].y = y;
-			pixels_host_in[index].r = ImageGetPixel(img_in, x, y, 0);
-			pixels_host_in[index].g = ImageGetPixel(img_in, x, y, 1);
-			pixels_host_in[index].b = ImageGetPixel(img_in, x, y, 2);
-			// // if ()
+
+
+			p.x = x;
+			p.y = y;
+			p.r = ImageGetPixel(img_in, x, y, 0);
+			p.g = ImageGetPixel(img_in, x, y, 1);
+			p.b = ImageGetPixel(img_in, x, y, 2);
+
+			pixels_host_in[index] = p;
+			// pixels_host_in[index].y = y;
+			// pixels_host_in[index].r = ImageGetPixel(img_in, x, y, 0);
+			// pixels_host_in[index].g = ImageGetPixel(img_in, x, y, 1);
+			// pixels_host_in[index].b = ImageGetPixel(img_in, x, y, 2);
+
 			// printf("%d %d %D\n", );
-			ImageSetPixel(img_out, x, y, 0, pixels_host_in[index].r);
-			ImageSetPixel(img_out, x, y, 1, pixels_host_in[index].g);
-			ImageSetPixel(img_out, x, y, 2, pixels_host_in[index].b);
+			ImageSetPixel(img_out, x, y, 0,  pixels_host_in[index].r);
+			ImageSetPixel(img_out, x, y, 1,  pixels_host_in[index].g);
+			ImageSetPixel(img_out, x, y, 2,  pixels_host_in[index].b);
 			// if (y <=60  && x == 0){
-			// 	printf("index: %d x: %d y: %d \n", index, x, y );
+				// printf("index: %d x: %d y: %d \n", index, x, y );
 			//
-			// 	printf("r:%d g:%d b:%d\n", pixels_host_in[index].r,pixels_host_in[index].g,pixels_host_in[index].b);
+				// printf("r:%d g:%d b:%d\n", pixels_host_in[index].r,pixels_host_in[index].g,pixels_host_in[index].b);
 			//
 			// 	ImageSetPixel(img_in, x, y, 0,(unsigned char)  100);
 			// 	ImageSetPixel(img_in, x, y, 1, (unsigned char)  10);
